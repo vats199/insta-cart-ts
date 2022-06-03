@@ -1,10 +1,10 @@
-import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table } from "sequelize-typescript"
+import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType } from "sequelize-typescript"
 // import { Model, TableHints } from "sequelize/types"
 export interface TokenI{
-    id: number
-    token: string
-    refreshToken: string
-    login_count: number
+    id: any
+    accessToken: any
+    refreshToken: any
+    login_count: any
 }
 
 @Table(
@@ -18,15 +18,15 @@ export default class Token extends Model implements TokenI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column
-    id!: number;
+    @Column(DataType.INTEGER)
+    id!: any;
 
-    @Column
-    token!: string;
+    @Column(DataType.TEXT)
+    accessToken!: any;
 
-    @Column
-    refreshToken!: string;
+    @Column(DataType.TEXT)
+    refreshToken!: any;
 
-    @Column
-    login_count!: number;
+    @Column(DataType.INTEGER)
+    login_count!: any;
 }

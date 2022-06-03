@@ -1,12 +1,15 @@
-import { Sequelize } from "sequelize/types";
+import { Sequelize } from "sequelize-typescript";
 require("dotenv").config();
 
+const db: any = process.env.MYSQL_DATABASE
+const user: any = process.env.MYSQL_USER
+const pass:any = process.env.MYSQL_PASSWORD
 // const db: sequelize = {}
 
-export const sequelize = new Sequelize(process.env.MYSQL_DATABASE, process.env.MYSQL_USER, process.env.MYSQL_PASSWORD, {
+export const sequelize = new Sequelize(db, user, pass, {
     dialect: 'mysql',
     host: 'remotemysql.com',
-    port: 3306,
+    models: ['/Volumes/DATA/Projects/insta-cart-ts/source/models'],
 
     pool: {
         max: 5, 

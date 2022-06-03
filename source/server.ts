@@ -25,15 +25,21 @@ app.use((req, res, next)=> {
     next();
 })
 
+import * as authRoutes from "./routes/authRoutes";
+
+app.use('/auth', authRoutes.default)
+
 import User from "./models/userModel";
 import Token from "./models/tokenModel";
 
 import { sequelize } from "./util/database";
 
-Token.belongsTo(User, {constraints: true, onDelete: 'CASCADE'})
+Token.belongsTo(User, {constraints: true, onDelete: 'CASCADE', foreignKey: 'userId'})
 
-sequelize.sync()
-         .then(_database => {
+sequelize
+        //  .sync({force:true})
+         .sync()
+         .then(__database => {
           console.log('Database Connected Successfully.')
         })
          .then((_result)=>{

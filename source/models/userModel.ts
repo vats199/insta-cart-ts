@@ -1,16 +1,16 @@
-import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table } from "sequelize-typescript"
+import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType, Default } from "sequelize-typescript"
 // import { Model } from "sequelize/types"
 export interface UserI{
-    id: number
-    email: string
-    password: string
-    firstName: string
-    lastName: string
-    country_code: string
-    phone_number: number
-    stripe_id: string
-    is_verify: boolean
-    is_active: boolean
+    id: any
+    email: any
+    password: any
+    firstName: any
+    lastName: any
+    country_code: any
+    phone_number: any
+    stripe_id: any
+    is_verify: any
+    is_active: any
 }
 
 @Table(
@@ -24,35 +24,37 @@ export default class User extends Model implements UserI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column
-    id!: number;
+    @Column(DataType.INTEGER)
+    id!: any;
 
     @AllowNull(false)
-    @Column
-    email!: string;
+    @Column(DataType.STRING)
+    email!: any;
 
     @AllowNull(false)
-    @Column
-    password!: string;
+    @Column(DataType.STRING)
+    password!: any;
 
-    @Column
-    firstName!: string;
+    @Column(DataType.STRING)
+    firstName!: any;
 
-    @Column
-    lastName!: string;
+    @Column(DataType.STRING)
+    lastName!: any;
 
-    @Column
-    country_code!: string;
+    @Column(DataType.STRING)
+    country_code!: any;
 
-    @Column
-    phone_number!: number;
+    @Column(DataType.STRING)
+    phone_number!: any;
 
-    @Column
-    stripe_id!: string;
+    @Column(DataType.TEXT)
+    stripe_id!: any;
 
-    @Column
-    is_verify!: boolean;
+    @Default(false)
+    @Column(DataType.BOOLEAN)
+    is_verify!: any;
 
-    @Column
-    is_active!: boolean;
+    @Default(false)
+    @Column(DataType.BOOLEAN)
+    is_active!: any;
 }
