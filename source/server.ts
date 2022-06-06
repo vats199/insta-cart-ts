@@ -3,6 +3,7 @@ import express, { Express } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import * as dotenv from "dotenv";
+import path from "path";
 
 dotenv.config();
 
@@ -24,6 +25,9 @@ app.use((req, res, next)=> {
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
     next();
 })
+app.set('view engine', 'ejs');
+app.set('views', 'views');
+app.set('views', path.join(__dirname, 'views'));
 
 import * as authRoutes from "./routes/authRoutes";
 

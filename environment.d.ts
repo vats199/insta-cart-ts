@@ -8,6 +8,11 @@ declare global {
         jwtExpiration: string;
         refSecret: string;
         jwtRefExpiration: string;
+        accountSID: string;
+        serviceID: string;
+        authToken: string;
+        mjapi: string;
+        mjsecret: string
       }
     }
   }

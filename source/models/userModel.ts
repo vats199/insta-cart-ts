@@ -1,4 +1,5 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType, Default } from "sequelize-typescript"
+import { Col } from "sequelize/types/utils";
 // import { Model } from "sequelize/types"
 export interface UserI{
     id: any
@@ -11,6 +12,8 @@ export interface UserI{
     stripe_id: any
     is_verify: any
     is_active: any
+    resetToken: any
+    resetTokenExpiration: any
 }
 
 @Table(
@@ -57,4 +60,10 @@ export default class User extends Model implements UserI{
     @Default(false)
     @Column(DataType.BOOLEAN)
     is_active!: any;
+
+    @Column(DataType.TEXT)
+    resetToken!: any;
+
+    @Column(DataType.DATE)
+    resetTokenExpiration!: any;
 }
