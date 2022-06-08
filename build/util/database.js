@@ -1,13 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sequelize = void 0;
-const types_1 = require("sequelize/types");
+const sequelize_typescript_1 = require("sequelize-typescript");
 require("dotenv").config();
+const db = process.env.MYSQL_DATABASE;
+const user = process.env.MYSQL_USER;
+const pass = process.env.MYSQL_PASSWORD;
 // const db: sequelize = {}
-exports.sequelize = new types_1.Sequelize(process.env.MYSQL_DATABASE, process.env.MYSQL_USER, process.env.MYSQL_PASSWORD, {
+exports.sequelize = new sequelize_typescript_1.Sequelize(db, user, pass, {
     dialect: 'mysql',
     host: 'remotemysql.com',
-    port: 3306,
+    models: ['/Volumes/DATA/Projects/insta-cart-ts/source/models'],
     pool: {
         max: 5,
         min: 0,

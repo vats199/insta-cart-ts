@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
-let Token = class Token extends sequelize_typescript_1.Model {
+let Address = class Address extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.AutoIncrement,
@@ -18,23 +18,37 @@ __decorate([
     (0, sequelize_typescript_1.AllowNull)(false),
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
     __metadata("design:type", Object)
-], Token.prototype, "id", void 0);
+], Address.prototype, "id", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
     __metadata("design:type", Object)
-], Token.prototype, "accessToken", void 0);
+], Address.prototype, "addressInfo", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
     __metadata("design:type", Object)
-], Token.prototype, "refreshToken", void 0);
+], Address.prototype, "icon", void 0);
 __decorate([
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    (0, sequelize_typescript_1.Default)(0),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TINYINT),
     __metadata("design:type", Object)
-], Token.prototype, "login_count", void 0);
-Token = __decorate([
+], Address.prototype, "address_type", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.DECIMAL(10, 7)),
+    __metadata("design:type", Object)
+], Address.prototype, "latitude", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.DECIMAL(10, 7)),
+    __metadata("design:type", Object)
+], Address.prototype, "longitude", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Default)(false),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.BOOLEAN),
+    __metadata("design:type", Object)
+], Address.prototype, "is_active", void 0);
+Address = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'tokens',
+        tableName: 'addresses',
         timestamps: true
     })
-], Token);
-exports.default = Token;
+], Address);
+exports.default = Address;

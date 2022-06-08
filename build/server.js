@@ -30,6 +30,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const dotenv = __importStar(require("dotenv"));
+const path_1 = __importDefault(require("path"));
 dotenv.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
@@ -43,12 +44,24 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
     next();
 });
+app.set('view engine', 'ejs');
+app.set('views', 'views');
+app.set('views', path_1.default.join(__dirname, 'views'));
+const authRoutes = __importStar(require("./routes/authRoutes"));
+const userRoutes = __importStar(require("./routes/userRoutes"));
+app.use('/auth', authRoutes.default);
+app.use('/user', userRoutes.default);
 const userModel_1 = __importDefault(require("./models/userModel"));
 const tokenModel_1 = __importDefault(require("./models/tokenModel"));
+const addressModel_1 = __importDefault(require("./models/addressModel"));
 const database_1 = require("./util/database");
-tokenModel_1.default.belongsTo(userModel_1.default, { constraints: true, onDelete: 'CASCADE' });
-database_1.sequelize.sync()
-    .then(_database => {
+tokenModel_1.default.belongsTo(userModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
+addressModel_1.default.belongsTo(userModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
+userModel_1.default.hasMany(addressModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
+database_1.sequelize
+    //  .sync({force:true})
+    .sync()
+    .then(__database => {
     console.log('Database Connected Successfully.');
 })
     .then((_result) => {

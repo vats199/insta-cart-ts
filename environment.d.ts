@@ -13,6 +13,7 @@ declare global {
         authToken: string;
         mjapi: string;
         mjsecret: string
+        STRIPE_SK: string
       }
     }
   }

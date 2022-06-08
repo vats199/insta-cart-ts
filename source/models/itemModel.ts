@@ -1,31 +1,35 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType } from "sequelize-typescript"
-export interface TokenI{
+export interface ItemI{
     id: any
-    accessToken: any
-    refreshToken: any
-    login_count: any
+    title: any
+    bio: any
+    image: any
+    price: any
 }
 
 @Table(
     {
-        tableName: 'tokens',
+        tableName: 'items',
         timestamps: true
     }
 )
 
-export default class Token extends Model implements TokenI{
+export default class item extends Model implements ItemI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
     @Column(DataType.INTEGER)
     id!: any;
 
-    @Column(DataType.TEXT)
-    accessToken!: any;
+    @Column(DataType.STRING)
+    title!: any;
 
     @Column(DataType.TEXT)
-    refreshToken!: any;
+    bio!: any;
 
-    @Column(DataType.INTEGER)
-    login_count!: any;
+    @Column(DataType.TEXT)
+    image!: any;
+
+    @Column(DataType.FLOAT)
+    price!: any;
 }

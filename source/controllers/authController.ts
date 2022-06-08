@@ -1,6 +1,5 @@
 import User from "../models/userModel";
 import Token from "../models/tokenModel";
-import Stripe from "stripe"
 import crypto from "crypto"
 import bcrypt from "bcryptjs"
 import { validationResult } from "express-validator/check";
@@ -9,7 +8,9 @@ import { Request, Response } from "express";
 import { Twilio } from 'twilio'
 import * as mail from 'node-mailjet';
 import { Op } from "sequelize";
+import Stripe from "stripe";
 
+const stripe = new Stripe(process.env.STRIPE_SK as string, { apiVersion: '2020-08-27' })
 const mailjet = mail.connect(process.env.mjapi as string, process.env.mjsecret as string)
 
 const client = new Twilio(process.env.accountSID as string, process.env.authToken as string)
@@ -27,7 +28,7 @@ export const Signup = async (req: Request, res: Response) => {
 
     try {
 
-        const userData = {
+        const userData: any = {
             email: req.body.email,
             password: req.body.password
         }
@@ -41,6 +42,12 @@ export const Signup = async (req: Request, res: Response) => {
                 }
                 userData.password = hash
 
+                const customer = await stripe.customers.create({
+                    email: req.body.email,
+                    description: 'Insta-Cart Customer!'
+                })
+
+                userData.stripe_id = customer.id
                 const user = await User.create(userData)
                 const resp = await User.findByPk(user.id, { attributes: {exclude: ['password']} })
                 

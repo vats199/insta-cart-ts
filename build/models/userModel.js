@@ -16,47 +16,57 @@ __decorate([
     sequelize_typescript_1.AutoIncrement,
     sequelize_typescript_1.PrimaryKey,
     (0, sequelize_typescript_1.AllowNull)(false),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Number)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
+    __metadata("design:type", Object)
 ], User.prototype, "id", void 0);
 __decorate([
     (0, sequelize_typescript_1.AllowNull)(false),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING),
+    __metadata("design:type", Object)
 ], User.prototype, "email", void 0);
 __decorate([
     (0, sequelize_typescript_1.AllowNull)(false),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING),
+    __metadata("design:type", Object)
 ], User.prototype, "password", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING),
+    __metadata("design:type", Object)
 ], User.prototype, "firstName", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING),
+    __metadata("design:type", Object)
 ], User.prototype, "lastName", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING),
+    __metadata("design:type", Object)
 ], User.prototype, "country_code", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Number)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.STRING),
+    __metadata("design:type", Object)
 ], User.prototype, "phone_number", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
+    __metadata("design:type", Object)
 ], User.prototype, "stripe_id", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Boolean)
+    (0, sequelize_typescript_1.Default)(false),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.BOOLEAN),
+    __metadata("design:type", Object)
 ], User.prototype, "is_verify", void 0);
 __decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Boolean)
+    (0, sequelize_typescript_1.Default)(false),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.BOOLEAN),
+    __metadata("design:type", Object)
 ], User.prototype, "is_active", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
+    __metadata("design:type", Object)
+], User.prototype, "resetToken", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.DATE),
+    __metadata("design:type", Object)
+], User.prototype, "resetTokenExpiration", void 0);
 User = __decorate([
     (0, sequelize_typescript_1.Table)({
         tableName: 'users',
