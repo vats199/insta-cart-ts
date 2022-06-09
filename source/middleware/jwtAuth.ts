@@ -1,5 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import { globals,globalResponse } from '../util/const';
+import { errorResponse } from '../util/response';
 
 export const jwtAuth = (req: any, res: Response, next: NextFunction) =>{
     let token = req.get("Authorization");
@@ -21,6 +23,6 @@ export const jwtAuth = (req: any, res: Response, next: NextFunction) =>{
             })
         }
     }else{
-        return res.status(403).json({error: "User not Authenticated", status: 0})
+        return errorResponse(res, globals.StatusUnauthorized, globalResponse.Unauthorized, null)
     }
 }

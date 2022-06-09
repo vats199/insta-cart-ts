@@ -1,12 +1,12 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType, Default } from "sequelize-typescript"
 export interface AddressI{
-    id: any,
+    id: number,
     addressInfo: any
     icon: any
     address_type: any
     latitude: any
     longitude: any
-    is_active: any
+    is_active: boolean
 }
 
 @Table(
@@ -20,8 +20,8 @@ export default class Address extends Model implements AddressI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
     @Column(DataType.TEXT)
     addressInfo!: any;
@@ -40,6 +40,6 @@ export default class Address extends Model implements AddressI{
     longitude!: any;
 
     @Default(false)
-    @Column(DataType.BOOLEAN)
-    is_active!: any;
+    @Column
+    is_active!: boolean;
 }

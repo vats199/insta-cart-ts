@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
-let User = class User extends sequelize_typescript_1.Model {
+let order = class order extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.AutoIncrement,
@@ -18,59 +18,52 @@ __decorate([
     (0, sequelize_typescript_1.AllowNull)(false),
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
-], User.prototype, "id", void 0);
+], order.prototype, "id", void 0);
 __decorate([
-    (0, sequelize_typescript_1.AllowNull)(false),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], User.prototype, "email", void 0);
-__decorate([
-    (0, sequelize_typescript_1.AllowNull)(false),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], User.prototype, "password", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], User.prototype, "firstName", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], User.prototype, "lastName", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], User.prototype, "country_code", void 0);
-__decorate([
-    sequelize_typescript_1.Column,
-    __metadata("design:type", String)
-], User.prototype, "phone_number", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TINYINT),
     __metadata("design:type", Object)
-], User.prototype, "stripe_id", void 0);
+], order.prototype, "status", void 0);
 __decorate([
-    (0, sequelize_typescript_1.Default)(false),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Boolean)
-], User.prototype, "is_verify", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Default)(false),
-    sequelize_typescript_1.Column,
-    __metadata("design:type", Boolean)
-], User.prototype, "is_active", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.ENUM('Delivery', 'PickUp')),
     __metadata("design:type", Object)
-], User.prototype, "resetToken", void 0);
+], order.prototype, "order_type", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.DATE),
     __metadata("design:type", Object)
-], User.prototype, "resetTokenExpiration", void 0);
-User = __decorate([
+], order.prototype, "delivery_time", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Number)
+], order.prototype, "amount", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Number)
+], order.prototype, "discount_amount", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], order.prototype, "country_code", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], order.prototype, "phone_number", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", String)
+], order.prototype, "instructions", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Number)
+], order.prototype, "net_amount", void 0);
+__decorate([
+    (0, sequelize_typescript_1.Default)(false),
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Boolean)
+], order.prototype, "is_gift", void 0);
+order = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'users',
+        tableName: 'orders',
         timestamps: true
     })
-], User);
-exports.default = User;
+], order);
+exports.default = order;

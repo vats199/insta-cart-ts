@@ -2,16 +2,16 @@ import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType, D
 import { Col } from "sequelize/types/utils";
 // import { Model } from "sequelize/types"
 export interface UserI{
-    id: any
-    email: any
-    password: any
-    firstName: any
-    lastName: any
-    country_code: any
-    phone_number: any
+    id: number
+    email: string
+    password: string
+    firstName: string
+    lastName: string
+    country_code: string
+    phone_number: string
     stripe_id: any
-    is_verify: any
-    is_active: any
+    is_verify: boolean
+    is_active: boolean
     resetToken: any
     resetTokenExpiration: any
 }
@@ -27,39 +27,39 @@ export default class User extends Model implements UserI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
     @AllowNull(false)
-    @Column(DataType.STRING)
-    email!: any;
+    @Column
+    email!: string;
 
     @AllowNull(false)
-    @Column(DataType.STRING)
-    password!: any;
+    @Column
+    password!: string;
+    
+    @Column
+    firstName!: string;
 
-    @Column(DataType.STRING)
-    firstName!: any;
+    @Column
+    lastName!: string;
 
-    @Column(DataType.STRING)
-    lastName!: any;
+    @Column
+    country_code!: string;
 
-    @Column(DataType.STRING)
-    country_code!: any;
-
-    @Column(DataType.STRING)
-    phone_number!: any;
+    @Column
+    phone_number!: string;
 
     @Column(DataType.TEXT)
     stripe_id!: any;
 
     @Default(false)
-    @Column(DataType.BOOLEAN)
-    is_verify!: any;
+    @Column
+    is_verify!: boolean;
 
     @Default(false)
-    @Column(DataType.BOOLEAN)
-    is_active!: any;
+    @Column
+    is_active!: boolean;
 
     @Column(DataType.TEXT)
     resetToken!: any;

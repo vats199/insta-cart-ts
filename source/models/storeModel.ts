@@ -1,10 +1,10 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType, Default } from "sequelize-typescript"
 export interface StoreI{
-    id: any,
-    name: any
+    id: number,
+    name: string
     bio: any
     image: any
-    store_type: any
+    store_type: string
     delivery_type: any
     address: any
     latitude: any
@@ -22,11 +22,11 @@ export default class Store extends Model implements StoreI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
-    @Column(DataType.STRING)
-    name!: any;
+    @Column
+    name!: string;
     
     @Column(DataType.TEXT)
     bio!: any;
@@ -34,8 +34,8 @@ export default class Store extends Model implements StoreI{
     @Column(DataType.TEXT)
     image!: any;
 
-    @Column(DataType.STRING)
-    store_type!: any;
+    @Column
+    store_type!: string;
 
     @Column(DataType.TINYINT)
     delivery_type!: any;

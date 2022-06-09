@@ -1,7 +1,7 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType } from "sequelize-typescript"
 export interface CardI{
-    id: any
-    card_id: any
+    id: number
+    card_id: string
 }
 
 @Table(
@@ -15,9 +15,9 @@ export default class card extends Model implements CardI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
-    @Column(DataType.TEXT)
-    card_id!: any;
+    @Column
+    card_id!: string;
 }

@@ -22,29 +22,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.jwtAuth = void 0;
-const jwt = __importStar(require("jsonwebtoken"));
-const const_1 = require("../util/const");
-const jwtAuth = (req, res, next) => {
-    let token = req.get("Authorization");
-    if (token != undefined) {
-        token = token.split(' ')[1];
-        if (process.env.secret != undefined) {
-            jwt.verify(token, process.env.secret, (err, user) => {
-                if (!err) {
-                    if (user && token) {
-                        req.user = user.loadedUser;
-                        req.token = user.token;
-                        // console.log(user)
-                    }
-                    next();
-                }
-            });
-        }
-    }
-    else {
-        return res.status(const_1.globals.StatusUnauthorized).json({ message: "User not Authenticated", status: const_1.globals.Failed });
-    }
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-exports.jwtAuth = jwtAuth;
+Object.defineProperty(exports, "__esModule", { value: true });
+const shopController = __importStar(require("../controllers/shopController"));
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const router = express_1.default.Router();
+router.use((0, cors_1.default)());
+router.get('/stores', shopController.getStores);
+router.get('stores/:storeId/items', shopController.getSingleStore);
+router.get('/stores/items/:itemId', shopController.getItem);
+router.get('stores/search', shopController.search);
+exports.default = router;

@@ -3,6 +3,8 @@ import card from "../models/cardModel";
 import payment from "../models/paymentModel";
 import { Request, Response } from 'express'
 import Stripe from "stripe";
+import { globals, globalResponse } from '../util/const'
+import { successResponse, errorResponse } from "../util/response";
 
 const stripe = new Stripe(process.env.STRIPE_SK as string, { apiVersion: '2020-08-27' })
 
@@ -29,12 +31,13 @@ export const addCard = async (req: any, res: Response) => {
         });
 
         const save = await card.create({card_id: cardInfo.id, userId: req.user.id});
-        return res.status(200).json({message: "Card saved successfully!", card: save, status: 1})
+
+        return successResponse(res, globals.StatusOK, globalResponse.CardSaved, save)
 
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 
 }
@@ -48,11 +51,11 @@ export const getCards = async (req:any, res: Response) => {
             object: 'card'
         });
 
-        return res.status(200).json({message: "Cards Fetched!", cards: cards, status: 1})
+        return successResponse(res, globals.StatusOK, globalResponse.CardsFetched, cards)
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -64,7 +67,7 @@ export const checkout = async (req: any, res: Response) => {
         const amount = req.body.amount;
 
         if(!user.stripe_id){
-            return res.status(400).json({message: "Stripe account not found!", status: 0});
+            return errorResponse(res, globals.StatusBadRequest, globalResponse.StripeError, null)
         }
 
         const cardInfo = await stripe.customers.retrieveSource(user.stripe_id,req.body.card_id)
@@ -86,14 +89,14 @@ export const checkout = async (req: any, res: Response) => {
             status: 'PENDING'
         })
 
-        return res.status(200).json({message: "Payment Intent created!", data:{
-            client_secret: intent.client_secret,
-            customerId: intent.customer,
-            status: 1
-        }})
+        const data: any = {}
+        data.client_secret = intent.client_secret
+        data.customerId = intent.customer
+
+        return successResponse(res, globals.StatusOK, globalResponse.PaymentIntentCreated, data)
 
     } catch (error) {
         console.log(error);
-        return res.status(500).send({ error: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res,globals.StatusInternalServerError, globalResponse.ServerError, null)
     }
 }

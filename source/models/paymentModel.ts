@@ -1,8 +1,8 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType } from "sequelize-typescript"
 export interface PaymentI{
-    id: any
+    id: number
     transaction_id: any
-    amount: any
+    amount: number
     status: any
 }
 
@@ -17,14 +17,14 @@ export default class payment extends Model implements PaymentI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
     @Column(DataType.TEXT)
     transaction_id!: any;
 
-    @Column(DataType.FLOAT)
-    amount!: any;
+    @Column
+    amount!: number;
 
     @Column(DataType.ENUM('PENDING', 'SUCCESS', 'FAILED'))
     status!: any

@@ -10,7 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
-let Token = class Token extends sequelize_typescript_1.Model {
+let orderItem = class orderItem extends sequelize_typescript_1.Model {
 };
 __decorate([
     sequelize_typescript_1.AutoIncrement,
@@ -18,23 +18,19 @@ __decorate([
     (0, sequelize_typescript_1.AllowNull)(false),
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
-], Token.prototype, "id", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
-    __metadata("design:type", Object)
-], Token.prototype, "accessToken", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
-    __metadata("design:type", Object)
-], Token.prototype, "refreshToken", void 0);
+], orderItem.prototype, "id", void 0);
 __decorate([
     sequelize_typescript_1.Column,
     __metadata("design:type", Number)
-], Token.prototype, "login_count", void 0);
-Token = __decorate([
+], orderItem.prototype, "quantity", void 0);
+__decorate([
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Number)
+], orderItem.prototype, "itemTotal", void 0);
+orderItem = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'tokens',
+        tableName: 'orderitems',
         timestamps: true
     })
-], Token);
-exports.default = Token;
+], orderItem);
+exports.default = orderItem;

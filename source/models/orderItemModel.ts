@@ -1,8 +1,8 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType, Default } from "sequelize-typescript"
 export interface OrderItemI{
-    id: any,
-    quantity: any
-    itemTotal: any
+    id: number,
+    quantity: number
+    itemTotal: number
 }
 
 @Table(
@@ -16,12 +16,12 @@ export default class orderItem extends Model implements OrderItemI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
-    @Column(DataType.INTEGER)
-    quantity!: any;
-    
-    @Column(DataType.FLOAT)
-    itemTotal!: any;
+    @Column
+    quantity!: number;
+
+    @Column
+    itemTotal!: number;
 }

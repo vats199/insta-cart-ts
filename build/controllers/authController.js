@@ -45,13 +45,17 @@ const jwt = __importStar(require("jsonwebtoken"));
 const twilio_1 = require("twilio");
 const mail = __importStar(require("node-mailjet"));
 const sequelize_1 = require("sequelize");
+const stripe_1 = __importDefault(require("stripe"));
+const const_1 = require("../util/const");
+const response_1 = require("../util/response");
+const stripe = new stripe_1.default(process.env.STRIPE_SK, { apiVersion: '2020-08-27' });
 const mailjet = mail.connect(process.env.mjapi, process.env.mjsecret);
 const client = new twilio_1.Twilio(process.env.accountSID, process.env.authToken);
 let refreshTokens = {};
 const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array()[0].msg, status: 0 });
+        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
     }
     try {
         const userData = {
@@ -63,39 +67,44 @@ const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             bcryptjs_1.default.hash(req.body.password, 10, (err, hash) => __awaiter(void 0, void 0, void 0, function* () {
                 if (err) {
                     console.log(err);
-                    return res.status(400).json({ message: "Error occured in incrypting password", status: 0 });
+                    return res.status(const_1.globals.StatusBadRequest).json({ message: "Error occured in incrypting password", status: const_1.globals.Failed });
                 }
                 userData.password = hash;
+                const customer = yield stripe.customers.create({
+                    email: req.body.email,
+                    description: 'Insta-Cart Customer!'
+                });
+                userData.stripe_id = customer.id;
                 const user = yield userModel_1.default.create(userData);
                 const resp = yield userModel_1.default.findByPk(user.id, { attributes: { exclude: ['password'] } });
-                return res.status(200).json({ message: "Registration successful", userData: resp, status: 1 });
+                return (0, response_1.successResponse)(res, const_1.globals.StatusCreated, const_1.globalResponse.RegistrationSuccess, resp);
             }));
         }
         else {
-            return res.json({ error: "USER ALREADY EXISTS", status: 0 });
+            return res.json({ error: "USER ALREADY EXISTS", status: const_1.globals.Failed });
         }
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.Signup = Signup;
 const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array()[0].msg, status: 0 });
+        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
     }
     try {
         const test = yield userModel_1.default.findOne({ where: { email: req.body.email } });
         if (!test || test == null || test == undefined) {
-            return res.status(200).json({ message: "User does not exist!", status: 0 });
+            return res.status(const_1.globals.StatusOK).json({ message: "User does not exist!", status: const_1.globals.Failed });
         }
         const passCheck = yield bcryptjs_1.default.compare(req.body.password, test.password);
         if (!passCheck) {
-            return res.status(400).json({ error: 'Invalid Email or Password!', status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ error: 'Invalid Email or Password!', status: const_1.globals.Failed });
         }
-        test.is_active = 1;
+        test.is_active = true;
         yield test.save();
         const loadedUser = yield userModel_1.default.findByPk(test.id, { attributes: { exclude: ['password'] } });
         const accessToken = jwt.sign({ loadedUser }, process.env.secret, { expiresIn: process.env.jwtExpiration });
@@ -107,33 +116,30 @@ const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             getToken.accessToken = accessToken;
             getToken.refreshToken = refreshToken;
             yield getToken.save();
-            return res.status(200).json({
-                message: 'Logged-in Successfully',
-                user: loadedUser,
-                accessToken: accessToken,
-                refreshToken: refreshToken,
-                status: 1
-            });
+            const data = {};
+            data.accessToken = accessToken;
+            data.refreshToken = refreshToken;
+            data.user = loadedUser;
+            return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.LoginSuccess, data);
         }
         else {
-            const data = {
+            const payload = {
                 userId: test.id,
                 accessToken: accessToken,
                 refreshToken: refreshToken,
                 login_count: 1
             };
-            yield tokenModel_1.default.create(data);
-            return res.status(200).json({
-                message: 'Logged-in Successfully',
-                user: loadedUser,
-                accessToken: accessToken,
-                refreshToken: refreshToken, status: 1
-            });
+            yield tokenModel_1.default.create(payload);
+            const data = {};
+            data.accessToken = accessToken;
+            data.refreshToken = refreshToken;
+            data.user = loadedUser;
+            return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.LoginSuccess, data);
         }
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.Login = Login;
@@ -141,39 +147,42 @@ const Logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     try {
         const getToken = yield tokenModel_1.default.findOne({ where: { userId: userId } });
+        const user = yield userModel_1.default.findByPk(userId);
         if (getToken) {
             if (getToken.accessToken == null) {
-                return res.json({ error: "User already Logged-out!", status: 0 });
+                return res.json({ error: "User already Logged-out!", status: const_1.globals.Failed });
             }
             else {
                 getToken.accessToken = null;
+                user.is_active = false;
+                yield user.save();
                 yield getToken.save();
-                return res.status(200).json({ message: 'Logged-out Successfully', status: 1 });
+                return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.LogoutSuccess, null);
             }
         }
         else {
-            return res.json({ error: "Log-out Failed!", status: 0 });
+            return res.json({ error: "Log-out Failed!", status: const_1.globals.Failed });
         }
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.Logout = Logout;
 const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array()[0].msg, status: 0 });
+        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
     }
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
     try {
         const user = yield userModel_1.default.findOne({ where: { country_code: country_code, phone_number: number } });
         if (!user) {
-            return res.status(400).json({ message: "User does not exist!", status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ message: "User does not exist!", status: 0 });
         }
-        user.is_active = 1;
+        user.is_active = true;
         yield user.save();
         const loadedUser = yield userModel_1.default.findByPk(user.id, { attributes: { exclude: ['password'] } });
         const otp = yield client.verify
@@ -193,44 +202,41 @@ const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 getToken.accessToken = accessToken;
                 getToken.refreshToken = refreshToken;
                 yield getToken.save();
-                return res.status(200).json({
-                    message: 'Logged-in Successfully',
-                    user: loadedUser,
-                    accessToken: accessToken,
-                    refreshToken: refreshToken,
-                    status: 1
-                });
+                const data = {};
+                data.accessToken = accessToken;
+                data.refreshToken = refreshToken;
+                data.user = loadedUser;
+                return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.LoginSuccess, data);
             }
             else {
-                const data = {
+                const payload = {
                     userId: user.id,
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                     login_count: 1
                 };
-                yield tokenModel_1.default.create(data);
-                return res.status(200).json({
-                    message: 'Logged-in Successfully',
-                    user: loadedUser,
-                    accessToken: accessToken,
-                    refreshToken: refreshToken, status: 1
-                });
+                yield tokenModel_1.default.create(payload);
+                const data = {};
+                data.accessToken = accessToken;
+                data.refreshToken = refreshToken;
+                data.user = loadedUser;
+                return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.LoginSuccess, data);
             }
         }
         else {
-            return res.status(400).json({ error: "Invalid OTP entered!", status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ error: "Invalid OTP entered!", status: const_1.globals.Failed });
         }
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.otpLogin = otpLogin;
 const generateOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array()[0].msg, status: 0 });
+        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
     }
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
@@ -243,22 +249,22 @@ const generateOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             channel: req.body.channel
         });
         if (otp.status == 'pending') {
-            return res.status(200).json({ message: "OTP sent Successfuly", status: 1 });
+            return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OtpSent, null);
         }
         else {
-            return res.status(400).json({ message: "Some error occured", status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ message: "Some error occured", status: const_1.globals.Failed });
         }
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.generateOTP = generateOTP;
 const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array()[0].msg, status: 0 });
+        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
     }
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
@@ -276,34 +282,34 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             if (user) {
                 user.country_code = country_code || user.country_code;
                 user.phone_number = number || user.phone_number;
-                user.is_verify = 1;
+                user.is_verify = true;
                 yield user.save();
             }
-            return res.status(200).json({ message: "Mobile number verified!", status: 1 });
+            return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OtpVerified, null);
         }
         else {
-            return res.status(400).json({ message: "Invalid OTP entered!", status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ message: "Invalid OTP entered!", status: const_1.globals.Failed });
         }
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.verifyOTP = verifyOTP;
 const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.body.refreshToken;
     if (!refreshToken || !(refreshToken in refreshTokens)) {
-        return res.status(403).json({ error: "Invalid RefreshToken!", status: 0 });
+        return res.status(const_1.globals.StatusNotAcceptable).json({ error: "Invalid RefreshToken!", status: const_1.globals.Failed });
     }
     jwt.verify(refreshToken, "somesupersuperrefreshsecret", (err, user) => __awaiter(void 0, void 0, void 0, function* () {
         if (!err) {
-            const token = jwt.sign({ user: user.loadedUser }, process.env.secret, { expiresIn: process.env.jwtExpiration });
-            yield tokenModel_1.default.update({ token: token }, { where: { refreshToken: refreshToken } }).then(res => console.log(res)).catch(err => console.log(err));
-            return res.status(201).json({ token, status: 1 });
+            const accessToken = jwt.sign({ user: user.loadedUser }, process.env.secret, { expiresIn: process.env.jwtExpiration });
+            yield tokenModel_1.default.update({ accessToken: accessToken }, { where: { refreshToken: refreshToken } }).then(res => console.log(res)).catch(err => console.log(err));
+            return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.RenewAccessToken, accessToken);
         }
         else {
-            return res.status(403).json({ error: "User not Authenticated!", status: 0 });
+            return res.status(const_1.globals.StatusUnauthorized).json({ error: "User not Authenticated!", status: const_1.globals.Failed });
         }
     }));
 });
@@ -311,17 +317,17 @@ exports.refreshToken = refreshToken;
 const resetPasswordLink = (req, res) => {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array()[0].msg, status: 0 });
+        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
     }
     try {
         crypto_1.default.randomBytes(32, (err, buffer) => __awaiter(void 0, void 0, void 0, function* () {
             if (err) {
-                return res.status(400).json({ message: "Some error occurred!", status: 0 });
+                return res.status(const_1.globals.StatusBadRequest).json({ message: "Some error occurred!", status: const_1.globals.Failed });
             }
             const token = buffer.toString('hex');
             const user = yield userModel_1.default.findOne({ where: { email: req.body.email } });
             if (!user) {
-                return res.status(400).json({ message: "No account found for this email!", status: 0 });
+                return res.status(const_1.globals.StatusBadRequest).json({ message: "No account found for this email!", status: const_1.globals.Failed });
             }
             user.resetToken = token;
             user.resetTokenExpiration = Date.now() + 3600000;
@@ -349,16 +355,16 @@ const resetPasswordLink = (req, res) => {
                 ]
             });
             if (link) {
-                return res.status(200).json({ message: 'Password reset link send to your email', status: 1 });
+                return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.ResetPasswordLinkSent, null);
             }
             else {
-                return res.status(400).json({ message: "Link generation failed!", status: 0 });
+                return res.status(const_1.globals.StatusBadRequest).json({ message: "Link generation failed!", status: const_1.globals.Failed });
             }
         }));
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 };
 exports.resetPasswordLink = resetPasswordLink;
@@ -372,7 +378,7 @@ const getNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
             }
         });
         if (!user) {
-            return res.status(400).json({ message: "Link is invalid", status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ message: "Link is invalid", status: const_1.globals.Failed });
         }
         res.render('auth/new-password', {
             path: '/new-password',
@@ -383,14 +389,14 @@ const getNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.getNewPassword = getNewPassword;
 const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ message: errors.array()[0].msg, status: 0 });
+        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
     }
     const newPassword = req.body.password;
     const confirmPassword = req.body.confirmPassword;
@@ -399,7 +405,7 @@ const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function
     let resetUser;
     try {
         if (newPassword !== confirmPassword) {
-            return res.status(400).json({ message: 'Passwords does not match!', status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ message: 'Passwords does not match!', status: const_1.globals.Failed });
         }
         const user = yield userModel_1.default.findOne({
             where: {
@@ -409,7 +415,7 @@ const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function
             }
         });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid Link!', status: 0 });
+            return res.status(const_1.globals.StatusBadRequest).json({ message: 'Invalid Link!', status: const_1.globals.Failed });
         }
         resetUser = user;
         const hashedPassword = yield bcryptjs_1.default.hash(newPassword, 10);
@@ -417,11 +423,11 @@ const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function
         resetUser.resetToken = null;
         resetUser.resetTokenExpiration = null;
         yield resetUser.save();
-        return res.status(200).json({ message: "Password Changed Successfully!", status: 1 });
+        return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.PasswordChanged, null);
     }
     catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.postNewPassword = postNewPassword;

@@ -8,6 +8,8 @@ import bcrypt from 'bcryptjs'
 import { Request, Response } from "express";
 import * as fs from 'fs'
 import * as path from 'path'
+import { globals, globalResponse } from '../util/const'
+import { successResponse, errorResponse } from "../util/response";
 
 import PDF from 'pdfkit'
 
@@ -22,7 +24,7 @@ export const getProfile = async (req: any, res: Response) => {
         const user = await User.findByPk(userId);
 
         if(!user){
-            return res.status(400).json({message: "User not found!", status: 0})
+            return errorResponse(res,globals.StatusNotFound, globalResponse.UserNotFound, null)
         }
 
         const data = {
@@ -32,11 +34,11 @@ export const getProfile = async (req: any, res: Response) => {
             phone: user.country_code + user.phone_number
         }
 
-        return res.status(200).json({message: "User Found!", data: data, status: 1})
+        return successResponse(res, globals.StatusOK, globalResponse.UserFound, data)
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -50,7 +52,7 @@ export const editName = async (req: any, res: Response) => {
         const user = await User.findByPk(userId);
 
         if(!user){
-            return res.status(404).json({message: "User not found!", status: 0})
+            return errorResponse(res,globals.StatusNotFound, globalResponse.UserNotFound, null)
         }
         
         user.firstName = firstName || user.firstName;
@@ -60,11 +62,11 @@ export const editName = async (req: any, res: Response) => {
         
         const result = await User.findByPk(userId, { attributes: {exclude: ['password']} })
 
-        return res.status(200).json({message: "Profile updated!",user: result, status: 1})
+        return successResponse(res, globals.StatusOK, globalResponse.UserUpdated, result)
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -73,7 +75,7 @@ export const editEmail = async (req: any, res: Response)=> {
 
     if(!errors.isEmpty()){
         
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
     const userId = req.user.id;
     const email = req.body.email;
@@ -85,13 +87,13 @@ export const editEmail = async (req: any, res: Response)=> {
         const test1: any = await User.findOne({where: {email: email}})
 
         if(test1){
-            return res.status(400).json({ message: 'Entered email already exist!', status: 0 })
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.EmailCheck, null)
         }
-        const passCheck = await bcrypt.compare(req.body.password, test.password)
+        const passCheck = await bcrypt.compare(password, test.password)
         
         
         if(!passCheck){
-            return res.status(400).json({ message: 'Invalid Password!', status: 0 })
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.InvalidCredentials, null)
         }
 
         test.email = email;
@@ -100,7 +102,7 @@ export const editEmail = async (req: any, res: Response)=> {
 
         const resp = await User.findByPk(userId, {attributes: {exclude: ['password']}})
 
-        return res.status(200).json({message: "E-mail id uploaded!", status: 1});
+        return successResponse(res, globals.StatusOK, globalResponse.UserUpdated, resp)
         
     } catch (error) {
         console.log(error);
@@ -122,11 +124,12 @@ export const postAddress = async (req: any, res: Response) => {
     try {
 
         const address = await Address.create(payload);
-        return res.status(200).json({message: 'Address added!', data: address, status: 1})
+
+        return successResponse(res, globals.StatusOK, globalResponse.AddressAdded, address)
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 
 }
@@ -137,11 +140,16 @@ export const getAddresses = async (req: any, res: Response) => {
     try {
 
         const addresses = await Address.findAll({where: {userId: userId}})
-        return res.status(200).json({message: "Addresses fetched!", totalAddresses: addresses.length, data: addresses, status: 1})
+
+        const data: any ={}
+        data.totalAddresses = addresses.length
+        data.addresses = addresses
+
+        return successResponse(res, globals.StatusOK, globalResponse.AddressesFetched, data)
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -161,17 +169,18 @@ export const editAddress = async (req: any, res: Response) => {
             address.longitude = req.body.longitude || address.longitude;
             try {
                 const result = await address.save();
-                return res.status(200).json({message:"Address Updated!", data: result, status: 1});
+
+                return successResponse(res, globals.StatusOK, globalResponse.AddressUpdated, result)
             } catch (err) {
                 console.log(err)
-                return res.status(404).json({error:"Address Not Updated!", status: 0});
+                return errorResponse(res,globals.StatusNotFound, globalResponse.Error, null)
             }
         } else {
-            return res.status(400).json({message: "No address found for given id!", status: 0})
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.NoAddress, null)
         }
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -182,11 +191,12 @@ export const deleteAddress = async (req: any, res: Response) => {
     try {
 
         await Address.destroy({where: { id:addressId, userId: userId }})
-        return res.status(200).json({message: "Address Deleted!", status: 0})
+
+        return successResponse(res, globals.StatusOK, globalResponse.AddressUpdated, null)
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -198,7 +208,7 @@ export const activateAddress = async (req: any, res: Response) => {
         const address: any = await Address.findOne({where: { id: addressId, userId: userId }})
         
         if(address.is_active == true){
-            return res.status(200).json({message: "Address is already active!", status: 0})
+            return errorResponse(res, globals.StatusBadRequest, globalResponse.AddressAlreadyActive, null)
         }else{
 
             address.is_active = 1;
@@ -206,17 +216,18 @@ export const activateAddress = async (req: any, res: Response) => {
             const otherAddresses = await Address.findAll({where: { is_active: 1, userId}})
             if(otherAddresses.length !== 0){
                 for(let i=0; i<otherAddresses.length; i++){
-                otherAddresses[i].is_active = 0;
+                otherAddresses[i].is_active = false;
                 await otherAddresses[i].save();
               }
             }
             const result = await address.save()
-            return res.status(200).json({message: "Address Activated!", data: result, status: 1})
+
+            return successResponse(res, globals.StatusOK, globalResponse.AddressActivated, result)
         }
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -263,11 +274,11 @@ export const postOrder = async (req: any, res: Response) => {
           }
           const resp = await order.findByPk(ord.id, {include: {model: orderItem, include: [item]}})
           
-          return res.status(200).json({ message: "Order has been Placed!", order: resp, status: 1 });
+          return successResponse(res, globals.StatusOK, globalResponse.OrderPlaced, resp)
  
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
           
 }
@@ -279,11 +290,12 @@ export const getOrders = async (req: any, res: Response) => {
 
     const orders = await order.findAll({where: {userId: userId}, include: {model: orderItem, include: [item]}})        
     // const orders = await order.findAll({where: {userId: userId}, include: item})
-    return res.status(200).json({message: "Orders Fetched!", orders: orders, status: 1})
+
+    return successResponse(res, globals.StatusOK, globalResponse.OrdersFetched, orders)
     
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -362,7 +374,7 @@ export const getInvoice = async (req: any, res: Response) => {
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 

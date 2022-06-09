@@ -1,9 +1,9 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType } from "sequelize-typescript"
 export interface TokenI{
-    id: any
+    id: number
     accessToken: any
     refreshToken: any
-    login_count: any
+    login_count: number
 }
 
 @Table(
@@ -17,8 +17,8 @@ export default class Token extends Model implements TokenI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
     @Column(DataType.TEXT)
     accessToken!: any;
@@ -26,6 +26,6 @@ export default class Token extends Model implements TokenI{
     @Column(DataType.TEXT)
     refreshToken!: any;
 
-    @Column(DataType.INTEGER)
-    login_count!: any;
+    @Column
+    login_count!: number;
 }

@@ -9,6 +9,8 @@ import { Twilio } from 'twilio'
 import * as mail from 'node-mailjet';
 import { Op } from "sequelize";
 import Stripe from "stripe";
+import { globals,globalResponse } from '../util/const'
+import { successResponse, errorResponse } from '../util/response'
 
 const stripe = new Stripe(process.env.STRIPE_SK as string, { apiVersion: '2020-08-27' })
 const mailjet = mail.connect(process.env.mjapi as string, process.env.mjsecret as string)
@@ -22,8 +24,8 @@ export const Signup = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if(!errors.isEmpty()){
-        
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
 
     try {
@@ -38,7 +40,7 @@ export const Signup = async (req: Request, res: Response) => {
             bcrypt.hash(req.body.password, 10, async(err: any,hash: any) =>{
                 if(err){
                     console.log(err);
-                    return res.status(400).json({message: "Error occured in incrypting password", status: 0})
+                    return errorResponse(res,globals.StatusBadRequest, globalResponse.Error, null)
                 }
                 userData.password = hash
 
@@ -50,16 +52,17 @@ export const Signup = async (req: Request, res: Response) => {
                 userData.stripe_id = customer.id
                 const user = await User.create(userData)
                 const resp = await User.findByPk(user.id, { attributes: {exclude: ['password']} })
+
+                return successResponse(res, globals.StatusCreated, globalResponse.RegistrationSuccess, resp)
                 
-                return res.status(200).json({message: "Registration successful", userData: resp, status: 1})
             })
         }else {
-            return res.json({ error: "USER ALREADY EXISTS", status: 0 })
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.UserExist, null)
           }
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 
 }
@@ -69,12 +72,12 @@ export const Login = async (req: Request, res: Response) => {
 
     if(!errors.isEmpty()){
         
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
     try {
         const test = await User.findOne({where: { email: req.body.email }})
         if(!test || test == null || test == undefined){
-            return res.status(200).json({message: "User does not exist!", status: 0})
+            return errorResponse(res,globals.StatusNotFound, globalResponse.UserNotFound, null)
         }
 
         
@@ -82,9 +85,9 @@ export const Login = async (req: Request, res: Response) => {
         const passCheck = await bcrypt.compare(req.body.password, test.password)
         
         if(!passCheck){
-            return res.status(400).json({ error: 'Invalid Email or Password!', status: 0 })
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.InvalidCredentials, null)
         }
-        test.is_active = 1;
+        test.is_active = true;
         await test.save()
         const loadedUser = await User.findByPk(test.id,{attributes:{exclude: ['password']}})
 
@@ -110,56 +113,59 @@ export const Login = async (req: Request, res: Response) => {
 
                 await getToken.save();
 
-                return res.status(200).json({
-                    message: 'Logged-in Successfully',
-                    user: loadedUser,
-                    accessToken: accessToken,
-                    refreshToken: refreshToken,
-                    status: 1
-                })
+                const data: any = {}
+                data.accessToken = accessToken
+                data.refreshToken = refreshToken;
+                data.user = loadedUser 
+
+                return successResponse(res, globals.StatusOK, globalResponse.LoginSuccess, data)
                 } else {
-                const data = {
+                const payload = {
                     userId: test.id,
                     accessToken: accessToken,
                     refreshToken: refreshToken,
                     login_count: 1
                 }
-                await Token.create(data)
-                return res.status(200).json({
-                    message: 'Logged-in Successfully',
-                    user: loadedUser,
-                    accessToken: accessToken,
-                    refreshToken: refreshToken, status: 1
-                })
+                await Token.create(payload)
+                const data: any = {}
+                data.accessToken = accessToken
+                data.refreshToken = refreshToken;
+                data.user = loadedUser 
+
+                return successResponse(res, globals.StatusOK, globalResponse.LoginSuccess, data)
                 }
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
 export const Logout = async (req: any, res: Response) => {
     const userId = req.user.id;
     try {
-        const getToken = await Token.findOne({ where: { userId: userId } })
+        const getToken = await Token.findOne({ where: { userId: userId } });
+        const user: any = await User.findByPk(userId);
     
         if (getToken) {
           if (getToken.accessToken == null) {
-            return res.json({ error: "User already Logged-out!", status: 0 })
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.AlreadyLoggedOut, null)
           } else {
     
             getToken.accessToken = null;
+            user.is_active = false;
+
+            await user.save();
     
             await getToken.save();
-            return res.status(200).json({ message: 'Logged-out Successfully', status: 1 })
+            return successResponse(res, globals.StatusOK, globalResponse.LogoutSuccess, null)
           }
         } else {
-          return res.json({ error: "Log-out Failed!", status: 0 })
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.Error, null)
         }
       } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
       }
 }
 
@@ -168,7 +174,7 @@ export const otpLogin = async(req: Request, res: Response) => {
 
     if(!errors.isEmpty()){
         
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
 
     const country_code = req.body.country_code;
@@ -179,9 +185,9 @@ export const otpLogin = async(req: Request, res: Response) => {
         const user =  await User.findOne({ where: { country_code: country_code, phone_number: number } })
         
         if(!user){
-            return res.status(400).json({message: "User does not exist!", status:0})
+            return errorResponse(res,globals.StatusNotFound, globalResponse.UserNotFound, null)
         }
-        user.is_active = 1;
+        user.is_active = true;
         await user.save()
         const loadedUser = await User.findByPk(user.id,{attributes:{exclude: ['password']}})
 
@@ -218,36 +224,35 @@ export const otpLogin = async(req: Request, res: Response) => {
  
                  await getToken.save();
  
-                 return res.status(200).json({
-                     message: 'Logged-in Successfully',
-                     user: loadedUser,
-                     accessToken: accessToken,
-                     refreshToken: refreshToken,
-                     status: 1
-                 })
+                 const data: any = {}
+                data.accessToken = accessToken
+                data.refreshToken = refreshToken;
+                data.user = loadedUser 
+
+                return successResponse(res, globals.StatusOK, globalResponse.LoginSuccess, data)
                  } else {
-                 const data = {
+                 const payload = {
                      userId: user.id,
                      accessToken: accessToken,
                      refreshToken: refreshToken,
                      login_count: 1
                  }
-                 await Token.create(data)
-                 return res.status(200).json({
-                     message: 'Logged-in Successfully',
-                     user: loadedUser,
-                     accessToken: accessToken,
-                     refreshToken: refreshToken, status: 1
-                 })
+                 await Token.create(payload)
+                 const data: any = {}
+                data.accessToken = accessToken
+                data.refreshToken = refreshToken;
+                data.user = loadedUser 
+
+                return successResponse(res, globals.StatusOK, globalResponse.LoginSuccess, data)
                  }
                  
         } else {
-        return res.status(400).json({ error: "Invalid OTP entered!", status: 0 })
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.InvalidOTP, null)
         }
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -256,7 +261,7 @@ export const generateOTP = async (req: Request, res: Response) => {
 
     if(!errors.isEmpty()){
         
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
 
     const country_code = req.body.country_code;
@@ -272,14 +277,14 @@ export const generateOTP = async (req: Request, res: Response) => {
                                 })
 
         if(otp.status == 'pending'){
-            return res.status(200).json({ message: "OTP sent Successfuly", status: 1 });
+            return successResponse(res, globals.StatusOK, globalResponse.OtpSent, null)
         }else{
-            return res.status(400).json({message: "Some error occured", status: 0})
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.Error, null)
         }
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -288,7 +293,7 @@ export const verifyOTP = async (req: any, res: Response) => {
 
     if(!errors.isEmpty()){
         
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
 
     const country_code = req.body.country_code;
@@ -309,37 +314,38 @@ export const verifyOTP = async (req: any, res: Response) => {
             if(user){
                 user.country_code = country_code || user.country_code
                 user.phone_number = number || user.phone_number
-                user.is_verify = 1;
+                user.is_verify = true;
 
                 await user.save();
             }
-            return res.status(200).json({ message: "Mobile number verified!", status: 1});
+            return successResponse(res, globals.StatusOK, globalResponse.OtpVerified, null)
         }else{
-            return res.status(400).json({ message: "Invalid OTP entered!", status: 0})
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.InvalidOTP, null)
         }
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
 export const refreshToken = async (req: Request, res: Response) => {
     const refreshToken = req.body.refreshToken;
   if (!refreshToken || !(refreshToken in refreshTokens)) {
-    return res.status(403).json({ error: "Invalid RefreshToken!", status: 0 })
+    return errorResponse(res,globals.StatusBadRequest, globalResponse.InvalidRefreshToken, null)
   }
   jwt.verify(refreshToken, "somesupersuperrefreshsecret", async(err: any, user: any) => {
     if (!err) {
-      const token = jwt.sign(
+      const accessToken = jwt.sign(
         { user: user.loadedUser },
         process.env.secret as string,
         { expiresIn: process.env.jwtExpiration as string }
       );
-      await Token.update({ token: token }, { where: { refreshToken: refreshToken } }).then(res => console.log(res)).catch(err => console.log(err))
-      return res.status(201).json({ token, status: 1 });
+      await Token.update({ accessToken: accessToken }, { where: { refreshToken: refreshToken } }).then(res => console.log(res)).catch(err => console.log(err))
+
+      return successResponse(res, globals.StatusOK, globalResponse.RenewAccessToken, accessToken)
     } else {
-      return res.status(403).json({ error: "User not Authenticated!", status: 0 })
+        return errorResponse(res, globals.StatusUnauthorized, globalResponse.Unauthorized, null)
     }
   })
 }
@@ -349,19 +355,19 @@ export const resetPasswordLink = (req: Request, res: Response) => {
 
     if(!errors.isEmpty()){
         
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
 
     try {
         crypto.randomBytes(32, async(err: any, buffer: any)=>{
             if(err){
-                return res.status(400).json({message: "Some error occurred!", status: 0})
+                return errorResponse(res,globals.StatusBadRequest, globalResponse.Error, null)
             }
             const token = buffer.toString('hex')
             const user = await User.findOne({where: { email: req.body.email }});
     
             if(!user){
-                return res.status(400).json({message: "No account found for this email!", status: 0})
+                return errorResponse(res,globals.StatusNotFound, globalResponse.UserNotFound, null)
             }
             user.resetToken = token;
             user.resetTokenExpiration = Date.now() + 3600000;
@@ -392,9 +398,9 @@ export const resetPasswordLink = (req: Request, res: Response) => {
                                     
     
             if(link){
-                return res.status(200).json({message: 'Password reset link send to your email', status: 1});
+                return successResponse(res, globals.StatusOK, globalResponse.ResetPasswordLinkSent, null)
             }else{
-                return res.status(400).json({message: "Link generation failed!", status: 0})
+                return errorResponse(res,globals.StatusBadRequest, globalResponse.Error, null)
             }
     
         
@@ -402,7 +408,7 @@ export const resetPasswordLink = (req: Request, res: Response) => {
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -419,7 +425,7 @@ export const getNewPassword = async(req: Request, res: Response) => {
           })
 
           if(!user){
-              return res.status(400).json({message: "Link is invalid", status: 0})
+            return errorResponse(res,globals.StatusNotAcceptable, globalResponse.InvalidResetLink, null)
           }
 
           res.render('auth/new-password', {
@@ -431,7 +437,7 @@ export const getNewPassword = async(req: Request, res: Response) => {
         
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }
 
@@ -440,7 +446,7 @@ export const postNewPassword = async (req: Request, res: Response) => {
 
     if(!errors.isEmpty()){
         
-      return res.status(400).json({message: errors.array()[0].msg, status: 0})
+      return errorResponse(res,globals.StatusBadRequest, errors.array()[0].msg, null)
     }
     
     const newPassword = req.body.password;
@@ -452,7 +458,7 @@ export const postNewPassword = async (req: Request, res: Response) => {
     try {
         
         if(newPassword !== confirmPassword) {
-            return res.status(400).json({message: 'Passwords does not match!', status: 0})
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.DiffPasswords, null)
         }
 
         const user = await User.findOne({
@@ -464,7 +470,7 @@ export const postNewPassword = async (req: Request, res: Response) => {
           })
 
         if(!user){
-            return res.status(400).json({ message: 'Invalid Link!', status: 0 });
+            return errorResponse(res,globals.StatusBadRequest, globalResponse.InvalidResetLink, null)
         }
 
         resetUser = user;
@@ -476,10 +482,10 @@ export const postNewPassword = async (req: Request, res: Response) => {
 
         await resetUser.save()
 
-        return res.status(200).json({ message: "Password Changed Successfully!", status: 1})
+        return successResponse(res, globals.StatusOK, globalResponse.PasswordChanged, null)
 
     } catch (error) {
         console.log(error);
-        return res.status(500).json({ message: error || 'Something went wrong!', status: 0 });
+        return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
 }

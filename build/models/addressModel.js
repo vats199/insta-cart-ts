@@ -16,8 +16,8 @@ __decorate([
     sequelize_typescript_1.AutoIncrement,
     sequelize_typescript_1.PrimaryKey,
     (0, sequelize_typescript_1.AllowNull)(false),
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.INTEGER),
-    __metadata("design:type", Object)
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Number)
 ], Address.prototype, "id", void 0);
 __decorate([
     (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.TEXT),
@@ -42,8 +42,8 @@ __decorate([
 ], Address.prototype, "longitude", void 0);
 __decorate([
     (0, sequelize_typescript_1.Default)(false),
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.BOOLEAN),
-    __metadata("design:type", Object)
+    sequelize_typescript_1.Column,
+    __metadata("design:type", Boolean)
 ], Address.prototype, "is_active", void 0);
 Address = __decorate([
     (0, sequelize_typescript_1.Table)({

@@ -1,10 +1,10 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType } from "sequelize-typescript"
 export interface ItemI{
-    id: any
-    title: any
+    id: number
+    title: string
     bio: any
     image: any
-    price: any
+    price: number
 }
 
 @Table(
@@ -18,11 +18,11 @@ export default class item extends Model implements ItemI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
-    @Column(DataType.STRING)
-    title!: any;
+    @Column
+    title!: string;
 
     @Column(DataType.TEXT)
     bio!: any;
@@ -30,6 +30,6 @@ export default class item extends Model implements ItemI{
     @Column(DataType.TEXT)
     image!: any;
 
-    @Column(DataType.FLOAT)
-    price!: any;
+    @Column
+    price!: number;
 }

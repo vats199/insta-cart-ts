@@ -1,16 +1,16 @@
 import { Model, AllowNull, AutoIncrement, Column, PrimaryKey, Table, DataType, Default } from "sequelize-typescript"
 export interface OrderI{
-    id: any,
+    id: number,
     status: any
     order_type: any
     delivery_time: any
-    amount: any
-    discount_amount: any
-    country_code: any
-    phone_number: any
-    instructions: any
-    net_amount: any
-    is_gift: any
+    amount: number
+    discount_amount: number
+    country_code: string
+    phone_number: string
+    instructions: string
+    net_amount: number
+    is_gift: boolean
 }
 
 @Table(
@@ -24,8 +24,8 @@ export default class order extends Model implements OrderI{
     @AutoIncrement
     @PrimaryKey
     @AllowNull(false)
-    @Column(DataType.INTEGER)
-    id!: any;
+    @Column
+    id!: number;
 
     @Column(DataType.TINYINT)
     status!: any;
@@ -36,26 +36,25 @@ export default class order extends Model implements OrderI{
     @Column(DataType.DATE)
     delivery_time!: any;
 
-    @Column(DataType.FLOAT)
-    amount!: any;
+    @Column
+    amount!: number;
 
-    @Column(DataType.FLOAT)
-    discount_amount!: any;
+    @Column
+    discount_amount!: number;
 
-    @Column(DataType.STRING)
-    country_code!: any;
+    @Column
+    country_code!: string;
 
-    @Column(DataType.STRING)
-    phone_number!: any;
+    @Column
+    phone_number!: string;
 
-    @Column(DataType.STRING)
-    instructions!: any;
+    @Column
+    instructions!: string;
 
-
-    @Column(DataType.FLOAT)
-    net_amount!: any;
+    @Column
+    net_amount!: number;
 
     @Default(false)
-    @Column(DataType.BOOLEAN)
-    is_gift!: any;
+    @Column
+    is_gift!: boolean;
 }
