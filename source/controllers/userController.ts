@@ -6,14 +6,12 @@ import order from "../models/orderModel";
 import orderItem from "../models/orderItemModel";
 import bcrypt from 'bcryptjs'
 import { Request, Response } from "express";
-import * as fs from 'fs'
 import * as path from 'path'
 import { globals, globalResponse } from '../util/const'
 import { successResponse, errorResponse } from "../util/response";
 
 import PDF from 'pdfkit'
 
-import { Op } from "sequelize";
 import { validationResult } from "express-validator/check";
 
 export const getProfile = async (req: any, res: Response) => {

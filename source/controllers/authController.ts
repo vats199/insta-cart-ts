@@ -1,3 +1,4 @@
+import { jwtAuth } from "../middleware/jwtAuth";
 import User from "../models/userModel";
 import Token from "../models/tokenModel";
 import crypto from "crypto"
@@ -13,6 +14,7 @@ import { globals,globalResponse } from '../util/const'
 import { successResponse, errorResponse } from '../util/response'
 
 const stripe = new Stripe(process.env.STRIPE_SK as string, { apiVersion: '2020-08-27' })
+
 const mailjet = mail.connect(process.env.mjapi as string, process.env.mjsecret as string)
 
 const client = new Twilio(process.env.accountSID as string, process.env.authToken as string)
@@ -59,8 +61,8 @@ export const Signup = async (req: Request, res: Response) => {
         }else {
             return errorResponse(res,globals.StatusBadRequest, globalResponse.UserExist, null)
           }
-        
-    } catch (error) {
+          
+        } catch (error) {
         console.log(error);
         return errorResponse(res, globals.StatusInternalServerError, globalResponse.ServerError, null);
     }
@@ -268,6 +270,10 @@ export const generateOTP = async (req: Request, res: Response) => {
     const number = req.body.phone_number;
     try {
         
+        const test =  await User.findOne({ where: { country_code: country_code, phone_number: number } });
+        if(test){
+            return errorResponse(res, globals.StatusBadRequest, globalResponse.UserExist, null)
+        }
         const otp = await client.verify
                                 .services(process.env.serviceID as string)
                                 .verifications
