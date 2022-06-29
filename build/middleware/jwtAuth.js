@@ -26,9 +26,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.jwtAuth = void 0;
 const jwt = __importStar(require("jsonwebtoken"));
 const const_1 = require("../util/const");
+const response_1 = require("../util/response");
 const jwtAuth = (req, res, next) => {
     let token = req.get("Authorization");
-    if (token != undefined) {
+    if (token) {
         token = token.split(' ')[1];
         if (process.env.secret != undefined) {
             jwt.verify(token, process.env.secret, (err, user) => {
@@ -44,7 +45,7 @@ const jwtAuth = (req, res, next) => {
         }
     }
     else {
-        return res.status(const_1.globals.StatusUnauthorized).json({ message: "User not Authenticated", status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusUnauthorized, const_1.globalResponse.Unauthorized, null);
     }
 };
 exports.jwtAuth = jwtAuth;

@@ -94,5 +94,18 @@ exports.globalResponse = {
     AddressActivated: "Address Activated!",
     OrderPlaced: "Order has been Placed!",
     OrdersFetched: "Orders Fetched!",
-    ServerError: "Something went wrong on serverside!"
+    ServerError: "Something went wrong on serverside!",
+    Error: "Some error occurred!",
+    UserExist: "User already exist!",
+    InvalidCredentials: "Invalid Credentials!",
+    AlreadyLoggedOut: "User already logged out!",
+    InvalidOTP: "Invalid OTP entered!",
+    InvalidRefreshToken: "Invalid refresh token!",
+    InvalidResetLink: "Invalid reset link!",
+    DiffPasswords: "Passwords does not match!",
+    EmailCheck: 'Entered email already exist!',
+    NoAddress: "No address found for given id!",
+    AddressAlreadyActive: "Address is already active!",
+    StripeError: "Stripe account not found!",
+    Unauthorized: "User not Authenticated!"
 };

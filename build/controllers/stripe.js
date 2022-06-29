@@ -64,7 +64,7 @@ const checkout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield userModel_1.default.findByPk(req.user.id);
         const amount = req.body.amount;
         if (!user.stripe_id) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: "Stripe account not found!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.StripeError, null);
         }
         const cardInfo = yield stripe.customers.retrieveSource(user.stripe_id, req.body.card_id);
         const intent = yield stripe.paymentIntents.create({
@@ -89,7 +89,7 @@ const checkout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
     catch (error) {
         console.log(error);
-        return res.status(const_1.globals.StatusInternalServerError).send({ error: error || 'Something went wrong!', status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusInternalServerError, const_1.globalResponse.ServerError, null);
     }
 });
 exports.checkout = checkout;

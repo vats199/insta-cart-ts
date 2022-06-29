@@ -35,17 +35,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const dotenv = __importStar(require("dotenv"));
 const express_1 = __importDefault(require("express"));
-const PORT = process.env.PORT || 3000;
-function startServer() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const app = (0, express_1.default)();
-        dotenv.config();
-        yield require('./loaders').default({ expressApp: app });
-        app.listen(PORT, (_port) => {
-            console.log('Server is running on port : ' + PORT);
-        });
+const cors_1 = __importDefault(require("cors"));
+const body_parser_1 = __importDefault(require("body-parser"));
+const path_1 = __importDefault(require("path"));
+const dotenv = __importStar(require("dotenv"));
+const authRoutes = __importStar(require("../routes/authRoutes"));
+const userRoutes = __importStar(require("../routes/userRoutes"));
+const shopRoutes = __importStar(require("../routes/shopRoutes"));
+exports.default = ({ app }) => __awaiter(void 0, void 0, void 0, function* () {
+    dotenv.config();
+    app.use((0, cors_1.default)());
+    app.use(express_1.default.json());
+    app.use(body_parser_1.default.urlencoded({ extended: true }));
+    app.use(body_parser_1.default.json());
+    app.use((req, res, next) => {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
+        next();
     });
-}
-startServer();
+    app.set('view engine', 'ejs');
+    app.set('views', 'views');
+    app.set('views', path_1.default.join(__dirname, 'views'));
+    app.use('/auth', authRoutes.default);
+    app.use('/user', userRoutes.default);
+    app.use('/', shopRoutes.default);
+    return app;
+});

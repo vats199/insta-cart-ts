@@ -52,7 +52,7 @@ const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const user = yield userModel_1.default.findByPk(userId);
         if (!user) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: "User not found!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.UserNotFound, null);
         }
         const data = {
             email: user.email,
@@ -75,7 +75,7 @@ const editName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield userModel_1.default.findByPk(userId);
         if (!user) {
-            return res.status(const_1.globals.StatusNotFound).json({ message: "User not found!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.UserNotFound, null);
         }
         user.firstName = firstName || user.firstName;
         user.lastName = lastName || user.lastName;
@@ -92,7 +92,7 @@ exports.editName = editName;
 const editEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     const userId = req.user.id;
     const email = req.body.email;
@@ -101,11 +101,11 @@ const editEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const test = yield userModel_1.default.findByPk(userId);
         const test1 = yield userModel_1.default.findOne({ where: { email: email } });
         if (test1) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: 'Entered email already exist!', status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.EmailCheck, null);
         }
-        const passCheck = yield bcryptjs_1.default.compare(req.body.password, test.password);
+        const passCheck = yield bcryptjs_1.default.compare(password, test.password);
         if (!passCheck) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: 'Invalid Password!', status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.InvalidCredentials, null);
         }
         test.email = email;
         yield test.save();
@@ -168,11 +168,11 @@ const editAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             }
             catch (err) {
                 console.log(err);
-                return res.status(const_1.globals.StatusNotFound).json({ error: "Address Not Updated!", status: const_1.globals.Failed });
+                return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.Error, null);
             }
         }
         else {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: "No address found for given id!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.NoAddress, null);
         }
     }
     catch (error) {
@@ -200,7 +200,7 @@ const activateAddress = (req, res) => __awaiter(void 0, void 0, void 0, function
     try {
         const address = yield addressModel_1.default.findOne({ where: { id: addressId, userId: userId } });
         if (address.is_active == true) {
-            return res.status(const_1.globals.StatusOK).json({ message: "Address is already active!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.AddressAlreadyActive, null);
         }
         else {
             address.is_active = 1;
@@ -263,7 +263,6 @@ const getOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const orders = yield orderModel_1.default.findAll({ where: { userId: userId }, include: { model: orderItemModel_1.default, include: [itemModel_1.default] } });
         // const orders = await order.findAll({where: {userId: userId}, include: item})
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OrdersFetched, orders);
-        return res.status(const_1.globals.StatusOK).json({ message: "Orders Fetched!", orders: orders, status: const_1.globals.Success });
     }
     catch (error) {
         console.log(error);

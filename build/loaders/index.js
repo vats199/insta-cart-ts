@@ -35,17 +35,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const expressLoader_1 = __importDefault(require("./expressLoader"));
+const sequelizeLoader_1 = __importDefault(require("./sequelizeLoader"));
 const dotenv = __importStar(require("dotenv"));
-const express_1 = __importDefault(require("express"));
-const PORT = process.env.PORT || 3000;
-function startServer() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const app = (0, express_1.default)();
-        dotenv.config();
-        yield require('./loaders').default({ expressApp: app });
-        app.listen(PORT, (_port) => {
-            console.log('Server is running on port : ' + PORT);
-        });
-    });
-}
-startServer();
+exports.default = ({ expressApp }) => __awaiter(void 0, void 0, void 0, function* () {
+    dotenv.config();
+    const seqConnection = yield (0, sequelizeLoader_1.default)();
+    console.log('Database Connected Successfully.');
+    yield (0, expressLoader_1.default)({ app: expressApp });
+    console.log('Express initialized Successfully.');
+});

@@ -12,8 +12,12 @@ declare global {
         serviceID: string;
         authToken: string;
         mjapi: string;
-        mjsecret: string
-        STRIPE_SK: string
+        mjsecret: string;
+        STRIPE_SK: string;
+        BucketName: string;
+        AWSBucketRegion: string;
+        AWSUserAccessKey: string;
+        AWSUserSecretKey: string;
       }
     }
   }

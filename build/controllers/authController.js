@@ -55,7 +55,7 @@ let refreshTokens = {};
 const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     try {
         const userData = {
@@ -67,7 +67,7 @@ const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             bcryptjs_1.default.hash(req.body.password, 10, (err, hash) => __awaiter(void 0, void 0, void 0, function* () {
                 if (err) {
                     console.log(err);
-                    return res.status(const_1.globals.StatusBadRequest).json({ message: "Error occured in incrypting password", status: const_1.globals.Failed });
+                    return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.Error, null);
                 }
                 userData.password = hash;
                 const customer = yield stripe.customers.create({
@@ -81,7 +81,7 @@ const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }));
         }
         else {
-            return res.json({ error: "USER ALREADY EXISTS", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.UserExist, null);
         }
     }
     catch (error) {
@@ -93,16 +93,16 @@ exports.Signup = Signup;
 const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     try {
         const test = yield userModel_1.default.findOne({ where: { email: req.body.email } });
         if (!test || test == null || test == undefined) {
-            return res.status(const_1.globals.StatusOK).json({ message: "User does not exist!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.UserNotFound, null);
         }
         const passCheck = yield bcryptjs_1.default.compare(req.body.password, test.password);
         if (!passCheck) {
-            return res.status(const_1.globals.StatusBadRequest).json({ error: 'Invalid Email or Password!', status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.InvalidCredentials, null);
         }
         test.is_active = true;
         yield test.save();
@@ -150,7 +150,7 @@ const Logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const user = yield userModel_1.default.findByPk(userId);
         if (getToken) {
             if (getToken.accessToken == null) {
-                return res.json({ error: "User already Logged-out!", status: const_1.globals.Failed });
+                return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.AlreadyLoggedOut, null);
             }
             else {
                 getToken.accessToken = null;
@@ -161,7 +161,7 @@ const Logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         else {
-            return res.json({ error: "Log-out Failed!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.Error, null);
         }
     }
     catch (error) {
@@ -173,14 +173,14 @@ exports.Logout = Logout;
 const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
     try {
         const user = yield userModel_1.default.findOne({ where: { country_code: country_code, phone_number: number } });
         if (!user) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: "User does not exist!", status: 0 });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.UserNotFound, null);
         }
         user.is_active = true;
         yield user.save();
@@ -224,7 +224,7 @@ const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
         else {
-            return res.status(const_1.globals.StatusBadRequest).json({ error: "Invalid OTP entered!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.InvalidOTP, null);
         }
     }
     catch (error) {
@@ -236,11 +236,15 @@ exports.otpLogin = otpLogin;
 const generateOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
     try {
+        const test = yield userModel_1.default.findOne({ where: { country_code: country_code, phone_number: number } });
+        if (test) {
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.UserExist, null);
+        }
         const otp = yield client.verify
             .services(process.env.serviceID)
             .verifications
@@ -252,7 +256,7 @@ const generateOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OtpSent, null);
         }
         else {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: "Some error occured", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.Error, null);
         }
     }
     catch (error) {
@@ -264,7 +268,7 @@ exports.generateOTP = generateOTP;
 const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
@@ -288,7 +292,7 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OtpVerified, null);
         }
         else {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: "Invalid OTP entered!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.InvalidOTP, null);
         }
     }
     catch (error) {
@@ -300,7 +304,7 @@ exports.verifyOTP = verifyOTP;
 const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.body.refreshToken;
     if (!refreshToken || !(refreshToken in refreshTokens)) {
-        return res.status(const_1.globals.StatusNotAcceptable).json({ error: "Invalid RefreshToken!", status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.InvalidRefreshToken, null);
     }
     jwt.verify(refreshToken, "somesupersuperrefreshsecret", (err, user) => __awaiter(void 0, void 0, void 0, function* () {
         if (!err) {
@@ -309,7 +313,7 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.RenewAccessToken, accessToken);
         }
         else {
-            return res.status(const_1.globals.StatusUnauthorized).json({ error: "User not Authenticated!", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusUnauthorized, const_1.globalResponse.Unauthorized, null);
         }
     }));
 });
@@ -317,17 +321,17 @@ exports.refreshToken = refreshToken;
 const resetPasswordLink = (req, res) => {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     try {
         crypto_1.default.randomBytes(32, (err, buffer) => __awaiter(void 0, void 0, void 0, function* () {
             if (err) {
-                return res.status(const_1.globals.StatusBadRequest).json({ message: "Some error occurred!", status: const_1.globals.Failed });
+                return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.Error, null);
             }
             const token = buffer.toString('hex');
             const user = yield userModel_1.default.findOne({ where: { email: req.body.email } });
             if (!user) {
-                return res.status(const_1.globals.StatusBadRequest).json({ message: "No account found for this email!", status: const_1.globals.Failed });
+                return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.UserNotFound, null);
             }
             user.resetToken = token;
             user.resetTokenExpiration = Date.now() + 3600000;
@@ -358,7 +362,7 @@ const resetPasswordLink = (req, res) => {
                 return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.ResetPasswordLinkSent, null);
             }
             else {
-                return res.status(const_1.globals.StatusBadRequest).json({ message: "Link generation failed!", status: const_1.globals.Failed });
+                return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.Error, null);
             }
         }));
     }
@@ -378,7 +382,7 @@ const getNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
             }
         });
         if (!user) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: "Link is invalid", status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusNotAcceptable, const_1.globalResponse.InvalidResetLink, null);
         }
         res.render('auth/new-password', {
             path: '/new-password',
@@ -396,7 +400,7 @@ exports.getNewPassword = getNewPassword;
 const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, check_1.validationResult)(req);
     if (!errors.isEmpty()) {
-        return res.status(const_1.globals.StatusBadRequest).json({ message: errors.array()[0].msg, status: const_1.globals.Failed });
+        return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, errors.array()[0].msg, null);
     }
     const newPassword = req.body.password;
     const confirmPassword = req.body.confirmPassword;
@@ -405,7 +409,7 @@ const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function
     let resetUser;
     try {
         if (newPassword !== confirmPassword) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: 'Passwords does not match!', status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.DiffPasswords, null);
         }
         const user = yield userModel_1.default.findOne({
             where: {
@@ -415,7 +419,7 @@ const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function
             }
         });
         if (!user) {
-            return res.status(const_1.globals.StatusBadRequest).json({ message: 'Invalid Link!', status: const_1.globals.Failed });
+            return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.InvalidResetLink, null);
         }
         resetUser = user;
         const hashedPassword = yield bcryptjs_1.default.hash(newPassword, 10);
