@@ -69,8 +69,8 @@ __decorate([
 ], User.prototype, "resetTokenExpiration", void 0);
 User = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'users',
-        timestamps: true
+        tableName: "users",
+        timestamps: true,
     })
 ], User);
 exports.default = User;

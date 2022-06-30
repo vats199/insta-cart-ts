@@ -33,28 +33,35 @@ const cors_1 = __importDefault(require("cors"));
 const check_1 = require("express-validator/check");
 const router = express_1.default.Router();
 router.use((0, cors_1.default)());
-router.post('/register', (0, check_1.body)('email').isEmail()
-    .withMessage('Please enter a valid email address!')
-    .normalizeEmail(), (0, check_1.body)('password', 'Please Enter a valid Password!').isLength({ min: 5 })
+router.post("/register", (0, check_1.body)("email")
+    .isEmail()
+    .withMessage("Please enter a valid email address!")
+    .normalizeEmail(), (0, check_1.body)("password", "Please Enter a valid Password!")
+    .isLength({ min: 5 })
     .trim(), authController.Signup);
-router.post('/login', (0, check_1.body)('email').isEmail()
-    .withMessage('Please enter a valid email address!')
-    .normalizeEmail(), (0, check_1.body)('password', 'Please Enter a valid Password!').isLength({ min: 5 })
+router.post("/login", (0, check_1.body)("email")
+    .isEmail()
+    .withMessage("Please enter a valid email address!")
+    .normalizeEmail(), (0, check_1.body)("password", "Please Enter a valid Password!")
+    .isLength({ min: 5 })
     .trim(), authController.Login);
-router.post('/generateOTP', (0, check_1.body)('phone_number').isMobilePhone('any')
-    .withMessage('Please enter a valid phone number!'), authController.generateOTP);
-router.post('/verifyOTP', (0, check_1.body)('phone_number').isMobilePhone('any')
-    .withMessage('Please enter a valid phone number!'), (0, check_1.body)('otpValue').isLength({ min: 4, max: 4 })
-    .withMessage('Enter Valid OTP!'), jwtAuth.jwtAuth, authController.verifyOTP);
-router.post('/otpLogin', (0, check_1.body)('phone_number').isMobilePhone('any')
-    .withMessage('Please enter a valid phone number!'), (0, check_1.body)('otpValue').isLength({ min: 4, max: 4 })
-    .withMessage('Enter Valid OTP!'), authController.otpLogin);
-router.post('/refreshToken', authController.refreshToken);
-router.post('/resetPasswordLink', (0, check_1.body)('email').isEmail()
-    .withMessage('Please enter a valid email address!')
+router.post("/generateOTP", (0, check_1.body)("phone_number")
+    .isMobilePhone("any")
+    .withMessage("Please enter a valid phone number!"), authController.generateOTP);
+router.post("/verifyOTP", (0, check_1.body)("phone_number")
+    .isMobilePhone("any")
+    .withMessage("Please enter a valid phone number!"), (0, check_1.body)("otpValue").isLength({ min: 4, max: 4 }).withMessage("Enter Valid OTP!"), jwtAuth.jwtAuth, authController.verifyOTP);
+router.post("/otpLogin", (0, check_1.body)("phone_number")
+    .isMobilePhone("any")
+    .withMessage("Please enter a valid phone number!"), (0, check_1.body)("otpValue").isLength({ min: 4, max: 4 }).withMessage("Enter Valid OTP!"), authController.otpLogin);
+router.post("/refreshToken", authController.refreshToken);
+router.post("/resetPasswordLink", (0, check_1.body)("email")
+    .isEmail()
+    .withMessage("Please enter a valid email address!")
     .normalizeEmail(), authController.resetPasswordLink);
-router.get('/resetPassword/:token', authController.getNewPassword);
-router.post('/new-password', (0, check_1.body)('password', 'Please Enter a valid Password!').isLength({ min: 5 })
+router.get("/resetPassword/:token", authController.getNewPassword);
+router.post("/new-password", (0, check_1.body)("password", "Please Enter a valid Password!")
+    .isLength({ min: 5 })
     .trim(), authController.postNewPassword);
-router.post('/logout', jwtAuth.jwtAuth, authController.Logout);
+router.post("/logout", jwtAuth.jwtAuth, authController.Logout);
 exports.default = router;

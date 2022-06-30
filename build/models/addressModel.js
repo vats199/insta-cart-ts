@@ -47,8 +47,8 @@ __decorate([
 ], Address.prototype, "is_active", void 0);
 Address = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'addresses',
-        timestamps: true
+        tableName: "addresses",
+        timestamps: true,
     })
 ], Address);
 exports.default = Address;

@@ -29,8 +29,8 @@ __decorate([
 ], orderItem.prototype, "itemTotal", void 0);
 orderItem = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'orderitems',
-        timestamps: true
+        tableName: "orderitems",
+        timestamps: true,
     })
 ], orderItem);
 exports.default = orderItem;

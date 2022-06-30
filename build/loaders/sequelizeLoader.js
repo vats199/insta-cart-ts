@@ -47,25 +47,69 @@ const cardModel_1 = __importDefault(require("../models/cardModel"));
 const paymentModel_1 = __importDefault(require("../models/paymentModel"));
 const dotenv = __importStar(require("dotenv"));
 const database_1 = require("../util/database");
-tokenModel_1.default.belongsTo(userModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
-addressModel_1.default.belongsTo(userModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
-userModel_1.default.hasMany(addressModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
-categoryModel_1.default.belongsTo(storeModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'storeId' });
-storeModel_1.default.hasMany(categoryModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'storeId' });
-itemModel_1.default.belongsTo(categoryModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'categoryId' });
-categoryModel_1.default.hasMany(itemModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'categoryId' });
-orderModel_1.default.belongsTo(userModel_1.default, { foreignKey: 'userId' });
-userModel_1.default.hasMany(orderModel_1.default, { foreignKey: 'userId' });
-orderItemModel_1.default.belongsTo(orderModel_1.default, { foreignKey: 'orderId', targetKey: 'id' });
-orderModel_1.default.hasMany(orderItemModel_1.default, { foreignKey: 'orderId' });
-orderItemModel_1.default.belongsTo(itemModel_1.default, { foreignKey: 'itemId', targetKey: 'id' });
-orderModel_1.default.belongsToMany(itemModel_1.default, { through: orderItemModel_1.default, foreignKey: 'orderId' });
-orderModel_1.default.belongsTo(addressModel_1.default, { foreignKey: 'addressId' });
-addressModel_1.default.hasMany(orderModel_1.default, { foreignKey: 'addressId' });
-cardModel_1.default.belongsTo(userModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
-userModel_1.default.hasMany(cardModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
-paymentModel_1.default.belongsTo(userModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
-userModel_1.default.hasMany(paymentModel_1.default, { constraints: true, onDelete: 'CASCADE', foreignKey: 'userId' });
+tokenModel_1.default.belongsTo(userModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "userId",
+});
+addressModel_1.default.belongsTo(userModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "userId",
+});
+userModel_1.default.hasMany(addressModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "userId",
+});
+categoryModel_1.default.belongsTo(storeModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "storeId",
+});
+storeModel_1.default.hasMany(categoryModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "storeId",
+});
+itemModel_1.default.belongsTo(categoryModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "categoryId",
+});
+categoryModel_1.default.hasMany(itemModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "categoryId",
+});
+orderModel_1.default.belongsTo(userModel_1.default, { foreignKey: "userId" });
+userModel_1.default.hasMany(orderModel_1.default, { foreignKey: "userId" });
+orderItemModel_1.default.belongsTo(orderModel_1.default, { foreignKey: "orderId", targetKey: "id" });
+orderModel_1.default.hasMany(orderItemModel_1.default, { foreignKey: "orderId" });
+orderItemModel_1.default.belongsTo(itemModel_1.default, { foreignKey: "itemId", targetKey: "id" });
+orderModel_1.default.belongsToMany(itemModel_1.default, { through: orderItemModel_1.default, foreignKey: "orderId" });
+orderModel_1.default.belongsTo(addressModel_1.default, { foreignKey: "addressId" });
+addressModel_1.default.hasMany(orderModel_1.default, { foreignKey: "addressId" });
+cardModel_1.default.belongsTo(userModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "userId",
+});
+userModel_1.default.hasMany(cardModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "userId",
+});
+paymentModel_1.default.belongsTo(userModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "userId",
+});
+userModel_1.default.hasMany(paymentModel_1.default, {
+    constraints: true,
+    onDelete: "CASCADE",
+    foreignKey: "userId",
+});
 exports.default = () => __awaiter(void 0, void 0, void 0, function* () {
     dotenv.config();
     const connection = yield database_1.sequelize

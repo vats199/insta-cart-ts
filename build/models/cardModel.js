@@ -25,8 +25,8 @@ __decorate([
 ], card.prototype, "card_id", void 0);
 card = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'cards',
-        timestamps: true
+        tableName: "cards",
+        timestamps: true,
     })
 ], card);
 exports.default = card;

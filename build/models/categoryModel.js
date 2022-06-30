@@ -29,8 +29,8 @@ __decorate([
 ], Category.prototype, "image", void 0);
 Category = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'categories',
-        timestamps: true
+        tableName: "categories",
+        timestamps: true,
     })
 ], Category);
 exports.default = Category;

@@ -41,7 +41,7 @@ const dotenv = __importStar(require("dotenv"));
 exports.default = ({ expressApp }) => __awaiter(void 0, void 0, void 0, function* () {
     dotenv.config();
     const seqConnection = yield (0, sequelizeLoader_1.default)();
-    console.log('Database Connected Successfully.');
+    console.log("Database Connected Successfully.");
     yield (0, expressLoader_1.default)({ app: expressApp });
-    console.log('Express initialized Successfully.');
+    console.log("Express initialized Successfully.");
 });

@@ -55,11 +55,11 @@ exports.default = ({ app }) => __awaiter(void 0, void 0, void 0, function* () {
         res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
         next();
     });
-    app.set('view engine', 'ejs');
-    app.set('views', 'views');
-    app.set('views', path_1.default.join(__dirname, 'views'));
-    app.use('/auth', authRoutes.default);
-    app.use('/user', userRoutes.default);
-    app.use('/', shopRoutes.default);
+    app.set("view engine", "ejs");
+    app.set("views", "views");
+    app.set("views", path_1.default.join(__dirname, "views"));
+    app.use("/auth", authRoutes.default);
+    app.use("/user", userRoutes.default);
+    app.use("/", shopRoutes.default);
     return app;
 });

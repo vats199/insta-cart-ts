@@ -28,13 +28,13 @@ __decorate([
     __metadata("design:type", Number)
 ], payment.prototype, "amount", void 0);
 __decorate([
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.ENUM('PENDING', 'SUCCESS', 'FAILED')),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.ENUM("PENDING", "SUCCESS", "FAILED")),
     __metadata("design:type", Object)
 ], payment.prototype, "status", void 0);
 payment = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'payments',
-        timestamps: true
+        tableName: "payments",
+        timestamps: true,
     })
 ], payment);
 exports.default = payment;

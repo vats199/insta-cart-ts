@@ -19,24 +19,29 @@ const paymentModel_1 = __importDefault(require("../models/paymentModel"));
 const stripe_1 = __importDefault(require("stripe"));
 const const_1 = require("../util/const");
 const response_1 = require("../util/response");
-const stripe = new stripe_1.default(process.env.STRIPE_SK, { apiVersion: '2020-08-27' });
+const stripe = new stripe_1.default(process.env.STRIPE_SK, {
+    apiVersion: "2020-08-27",
+});
 const addCard = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield userModel_1.default.findByPk(req.user.id);
-        const exp = req.body.expire.split('/');
+        const exp = req.body.expire.split("/");
         const exp_month = exp[0];
         const exp_year = exp[1];
         const cardInfo = yield stripe.customers.createSource(user.stripe_id, {
             source: {
-                'object': 'card',
-                'number': req.body.number,
-                'exp_month': exp_month,
-                'exp_year': exp_year,
-                'cvc': req.body.cvc,
-                'name': req.body.name
-            }
+                object: "card",
+                number: req.body.number,
+                exp_month: exp_month,
+                exp_year: exp_year,
+                cvc: req.body.cvc,
+                name: req.body.name,
+            },
         });
-        const save = yield cardModel_1.default.create({ card_id: cardInfo.id, userId: req.user.id });
+        const save = yield cardModel_1.default.create({
+            card_id: cardInfo.id,
+            userId: req.user.id,
+        });
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.CardSaved, save);
     }
     catch (error) {
@@ -49,7 +54,7 @@ const getCards = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield userModel_1.default.findByPk(req.user.id);
         const cards = yield stripe.customers.listSources(user.stripe_id, {
-            object: 'card'
+            object: "card",
         });
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.CardsFetched, cards);
     }
@@ -68,19 +73,19 @@ const checkout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const cardInfo = yield stripe.customers.retrieveSource(user.stripe_id, req.body.card_id);
         const intent = yield stripe.paymentIntents.create({
-            payment_method_types: ['card'],
-            description: 'Pay for Insta-Cart',
+            payment_method_types: ["card"],
+            description: "Pay for Insta-Cart",
             receipt_email: user.email,
             amount: parseFloat(amount) * 100,
-            currency: 'usd',
+            currency: "usd",
             customer: user.stripe_id,
-            payment_method: cardInfo.id
+            payment_method: cardInfo.id,
         });
         const paym = yield paymentModel_1.default.create({
             amount: parseFloat(amount),
             userId: req.user.id,
             transaction_id: intent.client_secret,
-            status: 'PENDING'
+            status: "PENDING",
         });
         const data = {};
         data.client_secret = intent.client_secret;

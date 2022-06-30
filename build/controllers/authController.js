@@ -48,7 +48,9 @@ const sequelize_1 = require("sequelize");
 const stripe_1 = __importDefault(require("stripe"));
 const const_1 = require("../util/const");
 const response_1 = require("../util/response");
-const stripe = new stripe_1.default(process.env.STRIPE_SK, { apiVersion: '2020-08-27' });
+const stripe = new stripe_1.default(process.env.STRIPE_SK, {
+    apiVersion: "2020-08-27",
+});
 const mailjet = mail.connect(process.env.mjapi, process.env.mjsecret);
 const client = new twilio_1.Twilio(process.env.accountSID, process.env.authToken);
 let refreshTokens = {};
@@ -60,7 +62,7 @@ const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userData = {
             email: req.body.email,
-            password: req.body.password
+            password: req.body.password,
         };
         const test = yield userModel_1.default.findOne({ where: { email: req.body.email } });
         if (!test) {
@@ -72,11 +74,13 @@ const Signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 userData.password = hash;
                 const customer = yield stripe.customers.create({
                     email: req.body.email,
-                    description: 'Insta-Cart Customer!'
+                    description: "Insta-Cart Customer!",
                 });
                 userData.stripe_id = customer.id;
                 const user = yield userModel_1.default.create(userData);
-                const resp = yield userModel_1.default.findByPk(user.id, { attributes: { exclude: ['password'] } });
+                const resp = yield userModel_1.default.findByPk(user.id, {
+                    attributes: { exclude: ["password"] },
+                });
                 return (0, response_1.successResponse)(res, const_1.globals.StatusCreated, const_1.globalResponse.RegistrationSuccess, resp);
             }));
         }
@@ -106,10 +110,17 @@ const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         test.is_active = true;
         yield test.save();
-        const loadedUser = yield userModel_1.default.findByPk(test.id, { attributes: { exclude: ['password'] } });
-        const accessToken = jwt.sign({ loadedUser }, process.env.secret, { expiresIn: process.env.jwtExpiration });
+        const loadedUser = yield userModel_1.default.findByPk(test.id, {
+            attributes: { exclude: ["password"] },
+        });
+        const accessToken = jwt.sign({ loadedUser }, process.env.secret, {
+            expiresIn: process.env.jwtExpiration,
+        });
         const refreshToken = jwt.sign({ loadedUser }, process.env.refSecret, { expiresIn: process.env.jwtRefExpiration });
-        refreshTokens[refreshToken] = { accessToken: accessToken, refreshToken: refreshToken };
+        refreshTokens[refreshToken] = {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+        };
         const getToken = yield tokenModel_1.default.findOne({ where: { userId: test.id } });
         if (getToken) {
             getToken.login_count += 1;
@@ -127,7 +138,7 @@ const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 userId: test.id,
                 accessToken: accessToken,
                 refreshToken: refreshToken,
-                login_count: 1
+                login_count: 1,
             };
             yield tokenModel_1.default.create(payload);
             const data = {};
@@ -178,24 +189,30 @@ const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
     try {
-        const user = yield userModel_1.default.findOne({ where: { country_code: country_code, phone_number: number } });
+        const user = yield userModel_1.default.findOne({
+            where: { country_code: country_code, phone_number: number },
+        });
         if (!user) {
             return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.UserNotFound, null);
         }
         user.is_active = true;
         yield user.save();
-        const loadedUser = yield userModel_1.default.findByPk(user.id, { attributes: { exclude: ['password'] } });
+        const loadedUser = yield userModel_1.default.findByPk(user.id, {
+            attributes: { exclude: ["password"] },
+        });
         const otp = yield client.verify
             .services(process.env.serviceID)
-            .verificationChecks
-            .create({
+            .verificationChecks.create({
             to: `${country_code}${number}`,
-            code: req.body.otpValue
+            code: req.body.otpValue,
         });
         if (otp.valid == true) {
             const accessToken = jwt.sign({ loadedUser }, process.env.secret, { expiresIn: process.env.jwtExpiration });
             const refreshToken = jwt.sign({ loadedUser }, process.env.refSecret, { expiresIn: process.env.jwtRefExpiration });
-            refreshTokens[refreshToken] = { accessToken: accessToken, refreshToken: refreshToken };
+            refreshTokens[refreshToken] = {
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+            };
             const getToken = yield tokenModel_1.default.findOne({ where: { userId: user.id } });
             if (getToken) {
                 getToken.login_count += 1;
@@ -213,7 +230,7 @@ const otpLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     userId: user.id,
                     accessToken: accessToken,
                     refreshToken: refreshToken,
-                    login_count: 1
+                    login_count: 1,
                 };
                 yield tokenModel_1.default.create(payload);
                 const data = {};
@@ -241,18 +258,19 @@ const generateOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const country_code = req.body.country_code;
     const number = req.body.phone_number;
     try {
-        const test = yield userModel_1.default.findOne({ where: { country_code: country_code, phone_number: number } });
+        const test = yield userModel_1.default.findOne({
+            where: { country_code: country_code, phone_number: number },
+        });
         if (test) {
             return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.UserExist, null);
         }
         const otp = yield client.verify
             .services(process.env.serviceID)
-            .verifications
-            .create({
+            .verifications.create({
             to: `${country_code}${number}`,
-            channel: req.body.channel
+            channel: req.body.channel,
         });
-        if (otp.status == 'pending') {
+        if (otp.status == "pending") {
             return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OtpSent, null);
         }
         else {
@@ -276,10 +294,9 @@ const verifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const otp = yield client.verify
             .services(process.env.serviceID)
-            .verificationChecks
-            .create({
+            .verificationChecks.create({
             to: `${country_code}${number}`,
-            code: req.body.otpValue
+            code: req.body.otpValue,
         });
         if (otp.valid == true) {
             const user = yield userModel_1.default.findByPk(userId);
@@ -309,7 +326,9 @@ const refreshToken = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     jwt.verify(refreshToken, "somesupersuperrefreshsecret", (err, user) => __awaiter(void 0, void 0, void 0, function* () {
         if (!err) {
             const accessToken = jwt.sign({ user: user.loadedUser }, process.env.secret, { expiresIn: process.env.jwtExpiration });
-            yield tokenModel_1.default.update({ accessToken: accessToken }, { where: { refreshToken: refreshToken } }).then(res => console.log(res)).catch(err => console.log(err));
+            yield tokenModel_1.default.update({ accessToken: accessToken }, { where: { refreshToken: refreshToken } })
+                .then((res) => console.log(res))
+                .catch((err) => console.log(err));
             return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.RenewAccessToken, accessToken);
         }
         else {
@@ -328,7 +347,7 @@ const resetPasswordLink = (req, res) => {
             if (err) {
                 return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.Error, null);
             }
-            const token = buffer.toString('hex');
+            const token = buffer.toString("hex");
             const user = yield userModel_1.default.findOne({ where: { email: req.body.email } });
             if (!user) {
                 return (0, response_1.errorResponse)(res, const_1.globals.StatusNotFound, const_1.globalResponse.UserNotFound, null);
@@ -336,27 +355,26 @@ const resetPasswordLink = (req, res) => {
             user.resetToken = token;
             user.resetTokenExpiration = Date.now() + 3600000;
             yield user.save();
-            const link = yield mailjet.post("send", { 'version': 'v3.1' })
-                .request({
-                "Messages": [
+            const link = yield mailjet.post("send", { version: "v3.1" }).request({
+                Messages: [
                     {
-                        "From": {
-                            "Email": "vatsalp.tcs@gmail.com",
-                            "Name": "Vatsal"
+                        From: {
+                            Email: "vatsalp.tcs@gmail.com",
+                            Name: "Vatsal",
                         },
-                        "To": [
+                        To: [
                             {
-                                "Email": req.body.email
-                            }
+                                Email: req.body.email,
+                            },
                         ],
-                        "Subject": "Greetings from Insta-Cart.",
-                        "HTMLPart": `
+                        Subject: "Greetings from Insta-Cart.",
+                        HTMLPart: `
                                                                         <p>You requested to reset your password for our website</p>
                                                                         <p>Click on this <a href="http://localhost:3000/auth/resetPassword/${token}">link</a> to reset a new password
                                                                         `,
-                        "CustomID": "AppGettingStartedTest"
-                    }
-                ]
+                        CustomID: "AppGettingStartedTest",
+                    },
+                ],
             });
             if (link) {
                 return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.ResetPasswordLinkSent, null);
@@ -378,17 +396,17 @@ const getNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const user = yield userModel_1.default.findOne({
             where: {
                 resetToken: token,
-                resetTokenExpiration: { [sequelize_1.Op.gt]: Date.now() }
-            }
+                resetTokenExpiration: { [sequelize_1.Op.gt]: Date.now() },
+            },
         });
         if (!user) {
             return (0, response_1.errorResponse)(res, const_1.globals.StatusNotAcceptable, const_1.globalResponse.InvalidResetLink, null);
         }
-        res.render('auth/new-password', {
-            path: '/new-password',
-            pageTitle: 'New Password',
+        res.render("auth/new-password", {
+            path: "/new-password",
+            pageTitle: "New Password",
             userId: user.id,
-            passwordToken: token
+            passwordToken: token,
         });
     }
     catch (error) {
@@ -415,8 +433,8 @@ const postNewPassword = (req, res) => __awaiter(void 0, void 0, void 0, function
             where: {
                 resetToken: token,
                 resetTokenExpiration: { [sequelize_1.Op.gt]: Date.now() },
-                id: userId
-            }
+                id: userId,
+            },
         });
         if (!user) {
             return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.InvalidResetLink, null);

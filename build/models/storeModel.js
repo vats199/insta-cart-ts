@@ -53,8 +53,8 @@ __decorate([
 ], Store.prototype, "longitude", void 0);
 Store = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'stores',
-        timestamps: true
+        tableName: "stores",
+        timestamps: true,
     })
 ], Store);
 exports.default = Store;

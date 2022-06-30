@@ -33,8 +33,8 @@ __decorate([
 ], Token.prototype, "login_count", void 0);
 Token = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'tokens',
-        timestamps: true
+        tableName: "tokens",
+        timestamps: true,
     })
 ], Token);
 exports.default = Token;

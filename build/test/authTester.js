@@ -6,72 +6,77 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const chai_1 = __importDefault(require("chai"));
 const chai_http_1 = __importDefault(require("chai-http"));
 const const_1 = require("../util/const");
-const url = 'localhost:3000';
+const url = "localhost:3000";
 const expect = chai_1.default.expect;
 chai_1.default.use(chai_http_1.default);
 describe("Register", () => {
-    const email = 'test@test.com';
-    const password = '123456';
-    it('should throw an error if user already registered', ok => {
-        chai_1.default.request(url)
-            .post('/auth/register')
+    const email = "test@test.com";
+    const password = "123456";
+    it("should throw an error if user already registered", (ok) => {
+        chai_1.default
+            .request(url)
+            .post("/auth/register")
             .send({
             email: "vatsalp.tcs@gmail.com",
-            password: "123456"
+            password: "123456",
         })
             .end((err, res) => {
             expect(res).to.have.status(const_1.globals.StatusBadRequest);
             ok();
         });
     });
-    it('should throw an error if user entered invalid email', ok => {
-        chai_1.default.request(url)
-            .post('/auth/register')
+    it("should throw an error if user entered invalid email", (ok) => {
+        chai_1.default
+            .request(url)
+            .post("/auth/register")
             .send({
             email: "vatsalp",
-            password: "123456"
+            password: "123456",
         })
             .end((err, res) => {
             expect(res).to.have.status(const_1.globals.StatusBadRequest);
-            expect(res.body.message).to.equals('Please enter a valid email address!');
+            expect(res.body.message).to.equals("Please enter a valid email address!");
             ok();
         });
     });
-    it('should throw an error if user entered invalid password', ok => {
-        chai_1.default.request(url)
-            .post('/auth/register')
+    it("should throw an error if user entered invalid password", (ok) => {
+        chai_1.default
+            .request(url)
+            .post("/auth/register")
             .send({
             email: "vatsalp.tcs@gmail.com",
-            password: "16"
+            password: "16",
         })
             .end((err, res) => {
             expect(res).to.have.status(const_1.globals.StatusBadRequest);
-            expect(res.body.message).to.equals('Please Enter a valid Password!');
+            expect(res.body.message).to.equals("Please Enter a valid Password!");
             ok();
         });
     });
 });
 describe("Login", () => {
-    const email = 'test@test.com';
-    const password = '123456';
-    it('should throw an error if user does not exist', ok => {
-        chai_1.default.request(url)
-            .post('/auth/login')
+    const email = "test@test.com";
+    const password = "123456";
+    it("should throw an error if user does not exist", (ok) => {
+        chai_1.default
+            .request(url)
+            .post("/auth/login")
             .send({
             email: "vatsp.tcs@gmail.com",
-            password: "123456"
+            password: "123456",
         })
             .end((err, res) => {
             expect(res).to.have.status(const_1.globals.StatusNotFound);
             ok();
         });
     });
-    it('should throw an error if user entered incorrect credentials', ok => {
-        chai_1.default.request(url)
-            .post('/auth/login')
+    it("should throw an error if user entered incorrect credentials", (ok) => {
+        chai_1.default
+            .request(url)
+            .post("/auth/login")
             .send({
             email: "vatsalp.tcs@gmail.com",
-            password: "12345678"
+            password: "12345678",
         })
             .end((err, res) => {
             expect(res).to.have.status(const_1.globals.StatusBadRequest);
@@ -79,29 +84,31 @@ describe("Login", () => {
             ok();
         });
     });
-    it('should throw an error if user entered invalid email', ok => {
-        chai_1.default.request(url)
-            .post('/auth/login')
+    it("should throw an error if user entered invalid email", (ok) => {
+        chai_1.default
+            .request(url)
+            .post("/auth/login")
             .send({
             email: "vatsalp",
-            password: "123456"
+            password: "123456",
         })
             .end((err, res) => {
             expect(res).to.have.status(const_1.globals.StatusBadRequest);
-            expect(res.body.message).to.equals('Please enter a valid email address!');
+            expect(res.body.message).to.equals("Please enter a valid email address!");
             ok();
         });
     });
-    it('should throw an error if user entered invalid password', ok => {
-        chai_1.default.request(url)
-            .post('/auth/login')
+    it("should throw an error if user entered invalid password", (ok) => {
+        chai_1.default
+            .request(url)
+            .post("/auth/login")
             .send({
             email: "vatsalp.tcs@gmail.com",
-            password: "16"
+            password: "16",
         })
             .end((err, res) => {
             expect(res).to.have.status(const_1.globals.StatusBadRequest);
-            expect(res.body.message).to.equals('Please Enter a valid Password!');
+            expect(res.body.message).to.equals("Please Enter a valid Password!");
             ok();
         });
     });

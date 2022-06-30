@@ -58,7 +58,7 @@ const getProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
-            phone: user.country_code + user.phone_number
+            phone: user.country_code + user.phone_number,
         };
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.UserFound, data);
     }
@@ -80,7 +80,9 @@ const editName = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         user.firstName = firstName || user.firstName;
         user.lastName = lastName || user.lastName;
         yield user.save();
-        const result = yield userModel_1.default.findByPk(userId, { attributes: { exclude: ['password'] } });
+        const result = yield userModel_1.default.findByPk(userId, {
+            attributes: { exclude: ["password"] },
+        });
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.UserUpdated, result);
     }
     catch (error) {
@@ -109,7 +111,9 @@ const editEmail = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         test.email = email;
         yield test.save();
-        const resp = yield userModel_1.default.findByPk(userId, { attributes: { exclude: ['password'] } });
+        const resp = yield userModel_1.default.findByPk(userId, {
+            attributes: { exclude: ["password"] },
+        });
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.UserUpdated, resp);
     }
     catch (error) {
@@ -124,7 +128,7 @@ const postAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         latitude: req.body.latitude,
         longitude: req.body.longitude,
         userId: req.user.id,
-        is_active: 1
+        is_active: 1,
     };
     try {
         const address = yield addressModel_1.default.create(payload);
@@ -155,7 +159,9 @@ const editAddress = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const userId = req.user.id;
     const addressId = req.params.addressId;
     try {
-        const address = yield addressModel_1.default.findOne({ where: { userId: userId, id: addressId } });
+        const address = yield addressModel_1.default.findOne({
+            where: { userId: userId, id: addressId },
+        });
         if (address) {
             address.addressInfo = req.body.address || address.addressInfo;
             address.icon = req.body.icon || address.icon;
@@ -198,13 +204,17 @@ const activateAddress = (req, res) => __awaiter(void 0, void 0, void 0, function
     const userId = req.user.id;
     const addressId = req.body.addressId;
     try {
-        const address = yield addressModel_1.default.findOne({ where: { id: addressId, userId: userId } });
+        const address = yield addressModel_1.default.findOne({
+            where: { id: addressId, userId: userId },
+        });
         if (address.is_active == true) {
             return (0, response_1.errorResponse)(res, const_1.globals.StatusBadRequest, const_1.globalResponse.AddressAlreadyActive, null);
         }
         else {
             address.is_active = 1;
-            const otherAddresses = yield addressModel_1.default.findAll({ where: { is_active: 1, userId } });
+            const otherAddresses = yield addressModel_1.default.findAll({
+                where: { is_active: 1, userId },
+            });
             if (otherAddresses.length !== 0) {
                 for (let i = 0; i < otherAddresses.length; i++) {
                     otherAddresses[i].is_active = false;
@@ -236,7 +246,7 @@ const postOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             addressId: addressId,
             amount: amount,
             discount_amount: discount_amount,
-            net_amount: net_amount
+            net_amount: net_amount,
         });
         for (let j = 0; j < items.length; j++) {
             if (items[j]) {
@@ -244,11 +254,13 @@ const postOrder = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     itemId: items[j].id,
                     orderId: ord.id,
                     quantity: items[j].qty,
-                    itemTotal: (items[j].qty) * (items[j].price)
+                    itemTotal: items[j].qty * items[j].price,
                 });
             }
         }
-        const resp = yield orderModel_1.default.findByPk(ord.id, { include: { model: orderItemModel_1.default, include: [itemModel_1.default] } });
+        const resp = yield orderModel_1.default.findByPk(ord.id, {
+            include: { model: orderItemModel_1.default, include: [itemModel_1.default] },
+        });
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OrderPlaced, resp);
     }
     catch (error) {
@@ -260,7 +272,10 @@ exports.postOrder = postOrder;
 const getOrders = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     try {
-        const orders = yield orderModel_1.default.findAll({ where: { userId: userId }, include: { model: orderItemModel_1.default, include: [itemModel_1.default] } });
+        const orders = yield orderModel_1.default.findAll({
+            where: { userId: userId },
+            include: { model: orderItemModel_1.default, include: [itemModel_1.default] },
+        });
         // const orders = await order.findAll({where: {userId: userId}, include: item})
         return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.OrdersFetched, orders);
     }
@@ -273,22 +288,25 @@ exports.getOrders = getOrders;
 const getInvoice = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const orderId = req.params.orderId;
-    const invoiceName = 'Order #' + orderId + ' Invoice' + '.pdf';
-    const invoicePath = path.join('data', 'invoices', invoiceName);
+    const invoiceName = "Order #" + orderId + " Invoice" + ".pdf";
+    const invoicePath = path.join("data", "invoices", invoiceName);
     try {
-        const ord = yield orderModel_1.default.findOne({ where: { userId: userId, id: orderId }, include: itemModel_1.default });
+        const ord = yield orderModel_1.default.findOne({
+            where: { userId: userId, id: orderId },
+            include: itemModel_1.default,
+        });
         const pdfDoc = new pdfkit_1.default();
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'inline; filename="' + invoicePath + '"');
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", 'inline; filename="' + invoicePath + '"');
         // pdfDoc.pipe(fs.createWriteStream(invoicePath));
         pdfDoc.pipe(res);
-        pdfDoc.fontSize(30).text('Insta-Cart', {
-            align: 'center'
+        pdfDoc.fontSize(30).text("Insta-Cart", {
+            align: "center",
         });
-        pdfDoc.fontSize(22).text('Invoice', {
-            underline: true
+        pdfDoc.fontSize(22).text("Invoice", {
+            underline: true,
         });
-        pdfDoc.text('  ');
+        pdfDoc.text("  ");
         let total = 0;
         ord.items.forEach((item) => {
             total += item.price * item.orderItem.quantity;
@@ -297,7 +315,7 @@ const getInvoice = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         let i;
         let invoiceTableTop = 160;
         pdfDoc.font("Helvetica-Bold");
-        generateTableRowHeader(pdfDoc, 160, 'Name', "Unit Price", 'Quantity', 'Item Total');
+        generateTableRowHeader(pdfDoc, 160, "Name", "Unit Price", "Quantity", "Item Total");
         generateHr(pdfDoc, invoiceTableTop + 20);
         pdfDoc.font("Helvetica");
         for (i = 0; i < ord.items.length; i++) {
@@ -305,16 +323,18 @@ const getInvoice = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             const position = invoiceTableTop + (i + 1) * 30;
             generateTableRow(pdfDoc, position, item.title, item.price, item.orderItem.quantity, item.price * item.orderItem.quantity);
         }
-        pdfDoc.text(' ');
-        pdfDoc.text(' ');
-        pdfDoc.text(' ');
-        pdfDoc.text('-' + ord.discount_amount, { align: 'right' });
-        pdfDoc.text('_____________________________', { align: 'right' });
-        pdfDoc.text('  ');
-        pdfDoc.fontSize(16).text('Total Price: $' + total, { align: 'right' });
-        pdfDoc.text('  ');
-        pdfDoc.fontSize(10).text('--------Thanks for shopping at InstaCart--------', {
-            align: 'center'
+        pdfDoc.text(" ");
+        pdfDoc.text(" ");
+        pdfDoc.text(" ");
+        pdfDoc.text("-" + ord.discount_amount, { align: "right" });
+        pdfDoc.text("_____________________________", { align: "right" });
+        pdfDoc.text("  ");
+        pdfDoc.fontSize(16).text("Total Price: $" + total, { align: "right" });
+        pdfDoc.text("  ");
+        pdfDoc
+            .fontSize(10)
+            .text("--------Thanks for shopping at InstaCart--------", {
+            align: "center",
         });
         pdfDoc.end();
     }
@@ -325,24 +345,21 @@ const getInvoice = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.getInvoice = getInvoice;
 function generateTableRow(doc, y, c2, c3, c4, c5) {
-    doc.fontSize(10)
+    doc
+        .fontSize(10)
         .text(c2, 150, y)
-        .text(c3, 280, y, { width: 90, align: 'right' })
-        .text(c4, 370, y, { width: 90, align: 'right' })
-        .text(c5, 0, y, { align: 'right' });
+        .text(c3, 280, y, { width: 90, align: "right" })
+        .text(c4, 370, y, { width: 90, align: "right" })
+        .text(c5, 0, y, { align: "right" });
 }
 function generateTableRowHeader(doc, y, c2, c3, c4, c5) {
-    doc.fontSize(10)
+    doc
+        .fontSize(10)
         .text(c2, 150, y)
-        .text(c3, 280, y, { width: 90, align: 'right' })
-        .text(c4, 370, y, { width: 90, align: 'right' })
-        .text(c5, 0, y, { align: 'right' });
+        .text(c3, 280, y, { width: 90, align: "right" })
+        .text(c4, 370, y, { width: 90, align: "right" })
+        .text(c5, 0, y, { align: "right" });
 }
 function generateHr(doc, y) {
-    doc
-        .strokeColor("#aaaaaa")
-        .lineWidth(1)
-        .moveTo(50, y)
-        .lineTo(550, y)
-        .stroke();
+    doc.strokeColor("#aaaaaa").lineWidth(1).moveTo(50, y).lineTo(550, y).stroke();
 }

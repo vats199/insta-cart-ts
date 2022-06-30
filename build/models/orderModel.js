@@ -24,7 +24,7 @@ __decorate([
     __metadata("design:type", Object)
 ], order.prototype, "status", void 0);
 __decorate([
-    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.ENUM('Delivery', 'PickUp')),
+    (0, sequelize_typescript_1.Column)(sequelize_typescript_1.DataType.ENUM("Delivery", "PickUp")),
     __metadata("design:type", Object)
 ], order.prototype, "order_type", void 0);
 __decorate([
@@ -62,8 +62,8 @@ __decorate([
 ], order.prototype, "is_gift", void 0);
 order = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'orders',
-        timestamps: true
+        tableName: "orders",
+        timestamps: true,
     })
 ], order);
 exports.default = order;

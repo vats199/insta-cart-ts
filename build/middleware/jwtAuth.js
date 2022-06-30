@@ -30,7 +30,7 @@ const response_1 = require("../util/response");
 const jwtAuth = (req, res, next) => {
     let token = req.get("Authorization");
     if (token) {
-        token = token.split(' ')[1];
+        token = token.split(" ")[1];
         if (process.env.secret != undefined) {
             jwt.verify(token, process.env.secret, (err, user) => {
                 if (!err) {

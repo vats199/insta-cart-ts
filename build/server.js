@@ -42,9 +42,9 @@ function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
         const app = (0, express_1.default)();
         dotenv.config();
-        yield require('./loaders').default({ expressApp: app });
+        yield require("./loaders").default({ expressApp: app });
         app.listen(PORT, (_port) => {
-            console.log('Server is running on port : ' + PORT);
+            console.log("Server is running on port : " + PORT);
         });
     });
 }

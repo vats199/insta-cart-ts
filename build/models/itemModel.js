@@ -37,8 +37,8 @@ __decorate([
 ], item.prototype, "price", void 0);
 item = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: 'items',
-        timestamps: true
+        tableName: "items",
+        timestamps: true,
     })
 ], item);
 exports.default = item;

@@ -63,16 +63,28 @@ const search = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const storeId = req.query.storeId;
     try {
         if (storeId) {
-            const categories = yield categoryModel_1.default.findAll({ include: itemModel_1.default, where: { title: { [sequelize_1.Op.like]: '%' + term + '%' }, storeId: storeId } });
+            const categories = yield categoryModel_1.default.findAll({
+                include: itemModel_1.default,
+                where: { title: { [sequelize_1.Op.like]: "%" + term + "%" }, storeId: storeId },
+            });
             const data = {};
             data.totalResult = categories.length;
             data.categories = categories;
             return (0, response_1.successResponse)(res, const_1.globals.StatusOK, const_1.globalResponse.SearchResponse, data);
         }
         else {
-            const categories = yield categoryModel_1.default.findAll({ include: [storeModel_1.default, itemModel_1.default], where: { title: { [sequelize_1.Op.like]: '%' + term + '%' } } });
-            const items = yield itemModel_1.default.findAll({ include: categoryModel_1.default, where: { title: { [sequelize_1.Op.like]: '%' + term + '%' } } });
-            const stores = yield storeModel_1.default.findAll({ include: categoryModel_1.default, where: { name: { [sequelize_1.Op.like]: '%' + term + '%' } } });
+            const categories = yield categoryModel_1.default.findAll({
+                include: [storeModel_1.default, itemModel_1.default],
+                where: { title: { [sequelize_1.Op.like]: "%" + term + "%" } },
+            });
+            const items = yield itemModel_1.default.findAll({
+                include: categoryModel_1.default,
+                where: { title: { [sequelize_1.Op.like]: "%" + term + "%" } },
+            });
+            const stores = yield storeModel_1.default.findAll({
+                include: categoryModel_1.default,
+                where: { name: { [sequelize_1.Op.like]: "%" + term + "%" } },
+            });
             const data = {};
             data.totalResults = categories.length + items.length + stores.length;
             data.categories = categories;
